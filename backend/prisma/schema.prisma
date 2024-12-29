@@ -12,3 +12,29 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+
+enum ShipmentStatus {
+  PENDENTE
+  EM_TRANSITO
+  CONCLUIDO
+}
+
+model Shipment {
+  id          Int            @id @default(autoincrement())
+  name        String
+  nfNumbers   String[]       // Array de notas fiscais
+  driver      Driver         @relation(fields: [driverId], references: [id])
+  driverId    Int
+  description String?
+  status      ShipmentStatus @default(PENDENTE)
+  createdAt   DateTime       @default(now())
+}
+
+model Driver {
+  id               Int       @id @default(autoincrement())
+  name             String
+  transportCompany String
+  licensePlate     String    @unique
+  shipments        Shipment[]
+}

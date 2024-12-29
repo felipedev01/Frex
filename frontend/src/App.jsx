@@ -9,8 +9,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<h1>Bem-vindo ao Sistema de Gestão de Entregas</h1>} />
-        <Route path="/cadastro-frete" element={<CadastroFrete />} />
+        <Route path="/" element={<CadastroFrete />} />
       </Routes>
     </Router>
   );

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import logoFrex from '../assets/logo_frex.svg'; 
+import axios from 'axios';
+
 
 // Componente de Alerta
 const Alert = ({ children, type }) => {
@@ -67,24 +69,19 @@ const CadastroFrete = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    if (!formData.name || formData.nfList.length === 0 || !formData.driverId) {
-      setMessage({
-        type: 'error',
-        text: 'Por favor, preencha todos os campos obrigatórios e adicione ao menos uma nota fiscal.'
+  
+    try {
+      const response = await axios.post('http://localhost:3002/shipments', {
+        name: formData.name, // Nome da carga
+        nfNumbers: formData.nfList, // Lista de notas fiscais
+        driverId: formData.driverId, // ID do motorista
+        description: formData.description, // Descrição
       });
-      setLoading(false);
-      return;
-    }
-
-    setTimeout(() => {
-      setMessage({
-        type: 'success',
-        text: 'Frete cadastrado com sucesso!'
-      });
+  
+      setMessage({ type: 'success', text: response.data.message });
       setFormData({
         name: '',
         currentNF: '',
@@ -92,9 +89,15 @@ const CadastroFrete = () => {
         driverId: '',
         description: ''
       });
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Erro ao cadastrar frete. Verifique os dados.' });
+      console.error('Erro:', error);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
+  
+  
 
   return (
     <div className="min-h-screen bg-purple-50 flex items-center justify-center p-4">
