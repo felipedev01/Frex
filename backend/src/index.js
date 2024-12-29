@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import shipmentsRouter from './routes/shipments.js';
+import driversRouter from './routes/drivers.js';
 
 dotenv.config();
 
@@ -11,15 +12,10 @@ app.use(express.json());
 
 // Rotas
 
-app.get('/debug', (req, res) => {
-  console.log('🚀 Endpoint de debug foi acessado!');
-  res.status(200).json({
-    message: '🚀 Debug funcionando diretamente no appp!',
-    status: 'success'
-  });
-});
+app.use('/drivers', driversRouter);
 
-app.use('/', shipmentsRouter );
+
+app.use('/shipments', shipmentsRouter );
 
 // Iniciar servidor
 const PORT = process.env.PORT || 3002;

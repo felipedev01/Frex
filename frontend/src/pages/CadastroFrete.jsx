@@ -5,6 +5,13 @@ import axios from 'axios';
 
 
 // Componente de Alerta
+
+import { useEffect } from 'react';
+
+
+
+
+
 const Alert = ({ children, type }) => {
   return (
     <div className={`p-4 rounded-lg mb-6 ${
@@ -18,6 +25,25 @@ const Alert = ({ children, type }) => {
 };
 
 const CadastroFrete = () => {
+
+    const [drivers, setDrivers] = useState([]);
+
+    useEffect(() => {
+        const fetchDrivers = async () => {
+          try {
+            const response = await axios.get('http://localhost:3002/drivers');
+            setDrivers(response.data);
+          } catch (error) {
+            console.error('Erro ao buscar motoristas:', error);
+            setMessage({ type: 'error', text: 'Erro ao carregar motoristas.' });
+          }
+        };
+      
+        fetchDrivers();
+      }, []);
+
+      console.log(drivers)
+
   const [formData, setFormData] = useState({
     name: '',
     currentNF: '',
@@ -26,10 +52,7 @@ const CadastroFrete = () => {
     description: ''
   });
 
-  const [drivers] = useState([
-    { id: 1, name: 'João Silva', company: 'Transportes Rápidos', plate: 'ABC-1234' },
-    { id: 2, name: 'Maria Santos', company: 'Express Cargas', plate: 'XYZ-5678' },
-  ]);
+
   
   const [message, setMessage] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(false);
@@ -194,7 +217,7 @@ const CadastroFrete = () => {
               <option value="">Selecione um motorista</option>
               {drivers.map(driver => (
                 <option key={driver.id} value={driver.id}>
-                  {`${driver.name} - ${driver.company} (${driver.plate})`}
+                  {`${driver.name} - ${driver.transportCompany} (${driver.licensePlate})`}
                 </option>
               ))}
             </select>
