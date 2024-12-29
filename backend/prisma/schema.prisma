@@ -30,11 +30,12 @@ model Shipment {
   status      ShipmentStatus @default(PENDENTE)
   createdAt   DateTime       @default(now())
 }
-
 model Driver {
   id               Int       @id @default(autoincrement())
   name             String
   transportCompany String
   licensePlate     String    @unique
+  email            String    @unique
+  password         String
   shipments        Shipment[]
 }
