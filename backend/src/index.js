@@ -21,7 +21,6 @@ app.use('/shipments', shipmentsRouter );
 app.use('/auth', authRouter);
 
 // Iniciar servidor
-const PORT = process.env.PORT || 3002;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+app.listen(3002, '0.0.0.0', () => {
+  console.log('Servidor rodando na porta 3002 atualizado!');
 });

@@ -46,7 +46,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Senha incorreta' });
     }
 
-    const token = jwt.sign({ id: driver.id }, 'SECRET_KEY', { expiresIn: '1h' });
+    const token = jwt.sign({ id: driver.id },process.env.SECRET_KEY, { expiresIn: '1h' });
     return res.status(200).json({ message: 'Login bem-sucedido!', token });
   } catch (error) {
     return res.status(500).json({ error: 'Erro no servidor' });
