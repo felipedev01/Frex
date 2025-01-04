@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Button, ScrollView } from 'react-native';
 import axios from 'axios';
 import styles from './styles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function DriverDashboard() {
   const [driver, setDriver] = useState({});
@@ -15,8 +16,23 @@ export default function DriverDashboard() {
   }, []);
 
   const fetchDriverData = async () => {
-    const response = await axios.get('https://frex.onrender.com/driver/me');
-    setDriver(response.data);
+    try {
+      const token = await AsyncStorage.getItem('token'); // Obtém o token do armazenamento local
+      
+      if (!token) {
+        throw new Error('Token não encontrado. Faça login novamente.');
+      }
+  
+      const response = await axios.get('https://frex.onrender.com/drivers/me', {
+        headers: {
+          Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho
+        },
+      });
+  
+      setDriver(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar dados do motorista:', error.response?.data || error.message);
+    }
   };
 
   const fetchCurrentShipment = async () => {
