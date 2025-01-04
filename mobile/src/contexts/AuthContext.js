@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   
       await AsyncStorage.setItem('token', token);
       setToken(token);
-      setUser(user);
+      /* setUser(user); */
     } catch (error) {
       console.log(error.response?.data || error.message);
       throw new Error('Erro ao fazer login');

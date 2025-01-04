@@ -1,37 +1,73 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button } from 'react-native';
-import api from '../services/api';
+import { View, Text, Button, ScrollView } from 'react-native';
+import axios from 'axios';
+import styles from './styles';
 
-const DriverDashboard = ({ navigation }) => {
-  const [driverData, setDriverData] = useState({});
-  const [shipments, setShipments] = useState([]);
+export default function DriverDashboard() {
+  const [driver, setDriver] = useState({});
+  const [currentShipment, setCurrentShipment] = useState(null);
+  const [shipmentHistory, setShipmentHistory] = useState([]);
 
   useEffect(() => {
-    const fetchDriverData = async () => {
-      const driverResponse = await api.get('/drivers/me');
-      setDriverData(driverResponse.data);
-
-      const shipmentResponse = await api.get('/shipments/assigned');
-      setShipments(shipmentResponse.data);
-    };
     fetchDriverData();
+    fetchCurrentShipment();
+    fetchShipmentHistory();
   }, []);
 
-  return (
-    <View>
-      <Text>Bem-vindo, {driverData.name}</Text>
-      <Text>Placa: {driverData.licensePlate}</Text>
-      <Text>Transportadora: {driverData.transportCompany}</Text>
-      <Text>Fretes Atribuídos:</Text>
-      {shipments.map((shipment) => (
-        <View key={shipment.id}>
-          <Text>Carga: {shipment.name}</Text>
-          <Text>Descrição: {shipment.description}</Text>
-        </View>
-      ))}
-      <Button title="Sair" onPress={() => navigation.navigate('Login')} />
-    </View>
-  );
-};
+  const fetchDriverData = async () => {
+    const response = await axios.get('https://frex.onrender.com/driver/me');
+    setDriver(response.data);
+  };
 
-export default DriverDashboard;
+  const fetchCurrentShipment = async () => {
+    const response = await axios.get('https://frex.onrender.com/driver/current-shipment');
+    setCurrentShipment(response.data);
+  };
+
+  const fetchShipmentHistory = async () => {
+    const response = await axios.get('https://frex.onrender.com/driver/shipment-history');
+    setShipmentHistory(response.data);
+  };
+
+  const handleFinishShipment = async () => {
+    await axios.post('https://frex.onrender.com/driver/finish-shipment', {
+      shipmentId: currentShipment.id,
+    });
+    setCurrentShipment(null);
+    fetchShipmentHistory();
+  };
+
+  return (
+    <ScrollView style={styles.container}>
+      <Text style={styles.title}>Dashboard do Motorista</Text>
+      <View style={styles.section}>
+        <Text>Nome: {driver.name}</Text>
+        <Text>Email: {driver.email}</Text>
+        <Text>Status: {currentShipment ? 'Carga Pendente' : 'Nenhuma carga pendente'}</Text>
+      </View>
+
+      {currentShipment && (
+        <View style={styles.section}>
+          <Text>Carga Atual:</Text>
+          <Text>ID: {currentShipment.id}</Text>
+          <Text>Descrição: {currentShipment.description}</Text>
+          <Text>Destino: {currentShipment.destination}</Text>
+          <Button title="Finalizar Carga" onPress={handleFinishShipment} />
+        </View>
+      )}
+
+      <View style={styles.section}>
+        <Text>Histórico de Cargas:</Text>
+        {shipmentHistory.map((shipment) => (
+          <View key={shipment.id}>
+            <Text>ID: {shipment.id}</Text>
+            <Text>Descrição: {shipment.description}</Text>
+            <Text>Destino: {shipment.destination}</Text>
+            <Text>Data de Conclusão: {shipment.endDate}</Text>
+          </View>
+        ))}
+      </View>
+    </ScrollView>
+  );
+}
+

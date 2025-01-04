@@ -17,7 +17,6 @@ export default function LoginScreen({ navigation }) {
     try {
       await login(email, password);
       Alert.alert('Sucesso', 'Login bem-sucedido!');
-      navigation.replace('DriverDashboard');
     } catch (error) {
       Alert.alert('Erro', error.message || 'Falha no login');
     }
