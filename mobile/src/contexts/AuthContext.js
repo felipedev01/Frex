@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await axios.post(
-        'http://172.25.90.151:3002/auth/login',
+        'https://frex.onrender.com/auth/login',
         { email, password },
         {
           headers: {

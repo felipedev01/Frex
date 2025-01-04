@@ -29,10 +29,12 @@ router.post('/register', async (req, res) => {
 });
 
 // Login de Motorista
+// Login de Motorista
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Busca o motorista pelo email
     const driver = await prisma.driver.findUnique({
       where: { email },
     });
@@ -41,16 +43,32 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Usuário não encontrado' });
     }
 
+    // Valida a senha
     const isPasswordValid = await bcrypt.compare(password, driver.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Senha incorreta' });
     }
 
-    const token = jwt.sign({ id: driver.id },process.env.SECRET_KEY, { expiresIn: '1h' });
-    return res.status(200).json({ message: 'Login bem-sucedido!', token });
+    // Gera o token
+    const token = jwt.sign({ id: driver.id }, process.env.SECRET_KEY, {
+      expiresIn: '1h',
+    });
+
+    // Retorna token e dados básicos do usuário
+    return res.status(200).json({
+      message: 'Login bem-sucedido!',
+      token,
+      user: {
+        id: driver.id,
+        name: driver.name,
+        email: driver.email,
+      },
+    });
   } catch (error) {
+    console.error('Erro no login:', error);
     return res.status(500).json({ error: 'Erro no servidor' });
   }
 });
 
 export default router;
+
