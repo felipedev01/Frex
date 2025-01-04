@@ -19,15 +19,15 @@ router.get('/', async (req, res) => {
 router.get('/me', authenticateToken, async (req, res) => {
   try {
     const driverId = req.user.id; // O ID do motorista deve vir do token JWT
-   /*  const driver = await prisma.driver.findUnique({
+    const driver = await prisma.driver.findUnique({
       where: { id: driverId },
     });
 
     if (!driver) {
       return res.status(404).json({ error: 'Motorista não encontrado' });
-    } */
+    }
 
-    return res.status(200).json(driverId);
+    return res.status(200).json(driver);
   } catch (error) {
     console.error('Erro ao obter dados do motorista:', error);
     return res.status(500).json({ error: 'Erro no servidor' });
