@@ -37,7 +37,7 @@ router.get('/my-shipments', authenticateDriver, async (req, res) => {
 
 
 
-router.post('/', async (req, res) => {
+/* router.post('/', async (req, res) => {
   const { name, nfNumbers, driverId, description } = req.body;
 
   try {
@@ -62,6 +62,54 @@ router.post('/', async (req, res) => {
     return res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
+ */
+
+
+router.post('/', async (req, res) => {
+  const { name, nfNumbers, driverId, description } = req.body;
+
+  try {
+    // Validação básica
+    if (!name || !nfNumbers || !driverId) {
+      return res.status(400).json({ error: 'Preencha todos os campos obrigatórios.' });
+    }
+
+    // Validação de frete pendente
+    const existingShipment = await prisma.shipment.findFirst({
+      where: {
+        driverId: parseInt(driverId),
+        status: 'PENDENTE'
+      }
+    });
+
+    if (existingShipment) {
+      return res.status(400).json({
+        error: 'Este motorista já possui um frete pendente. Finalize-o antes de criar outro.'
+      });
+    }
+
+    // Criação do frete no banco de dados
+    const shipment = await prisma.shipment.create({
+      data: {
+        name,
+        nfNumbers,
+        driverId: parseInt(driverId),
+        description,
+        status: 'PENDENTE'
+      },
+    });
+
+    return res.status(201).json({
+      message: 'Frete cadastrado com sucesso!',
+      shipment
+    });
+  } catch (error) {
+    console.error('Erro ao cadastrar frete:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+
 
 export default router;
 
