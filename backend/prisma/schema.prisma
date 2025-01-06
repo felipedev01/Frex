@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,32 +7,45 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 enum ShipmentStatus {
   PENDENTE
   EM_TRANSITO
   CONCLUIDO
 }
 
+model Driver {
+  id              Int        @id @default(autoincrement())
+  name            String
+  transportCompany String
+  licensePlate    String     @unique
+  email           String     @unique
+  password        String
+  shipments       Shipment[] @relation("DriverShipments")
+}
+
 model Shipment {
   id          Int      @id @default(autoincrement())
   name        String
-  nfNumbers   String[]
   driverId    Int
-  driver      Driver   @relation(fields: [driverId], references: [id])
   description String
-  status      String   @default("PENDENTE") // Status: PENDENTE, FINALIZADO
+  origin      String   // Adicionado: Local de origem do frete
+  destination String   // Adicionado: Local de destino do frete
+  status      String   @default("PENDENTE")
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  finishedAt  DateTime? // Data de finalização (opcional)
+  finishedAt  DateTime?
+
+  driver      Driver   @relation("DriverShipments", fields: [driverId], references: [id])
+  nfDetails   NFDetail[]
 }
 
-model Driver {
-  id               Int       @id @default(autoincrement())
-  name             String
-  transportCompany String
-  licensePlate     String    @unique
-  email            String    @unique
-  password         String
-  shipments        Shipment[]
+
+model NFDetail {
+  id          Int      @id @default(autoincrement())
+  shipmentId  Int
+  nfNumber    String
+  status      String   @default("PENDENTE")
+  proofImage  String?
+  createdAt   DateTime @default(now())
+
+  shipment    Shipment @relation(fields: [shipmentId], references: [id])
 }
