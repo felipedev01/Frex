@@ -81,15 +81,15 @@ router.post('/', async (req, res) => {
       },
     });
 
-    // Criar notas fiscais associadas ao frete
-    const nfDetails = nfNumbers.map(nfNumber => ({
+    
+     const nfDetails = nfNumbers.map(nfNumber => ({
       shipmentId: shipment.id,
       nfNumber,
     }));
 
     await prisma.nFDetail.createMany({
       data: nfDetails,
-    });
+    }); 
 
     return res.status(201).json({
       message: 'Frete e notas fiscais cadastrados com sucesso!',
