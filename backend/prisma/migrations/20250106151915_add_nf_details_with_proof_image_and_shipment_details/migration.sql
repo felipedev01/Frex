@@ -9,7 +9,6 @@
 */
 -- AlterTable
 ALTER TABLE "Shipment" DROP COLUMN "nfNumbers",
-DROP COLUMN "updatedAt",
 ADD COLUMN     "destination" TEXT NOT NULL,
 ADD COLUMN     "origin" TEXT NOT NULL;
 
