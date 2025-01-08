@@ -7,8 +7,10 @@
 
 */
 -- AlterTable
-ALTER TABLE "Shipment" ADD COLUMN     "finishedAt" TIMESTAMP(3),
-ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL,
+-- AlterTable
+ALTER TABLE "Shipment" 
+ADD COLUMN "finishedAt" TIMESTAMP(3),
+ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT NOW(), -- Adiciona valor padrão
 ALTER COLUMN "description" SET NOT NULL,
 DROP COLUMN "status",
-ADD COLUMN     "status" TEXT NOT NULL DEFAULT 'PENDENTE';
+ADD COLUMN "status" TEXT NOT NULL DEFAULT 'PENDENTE';
