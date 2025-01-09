@@ -65,7 +65,7 @@ router.post('/', async (req, res) => {
   try {
     const { name, driverId, description, origin, destination, nfNumbers } = req.body;
 
-    if (!name || !driverId || !description || !origin || !destination || !nfNumbers) {
+    if (!name || !driverId || !description || !destination || !nfNumbers) {
       return res.status(400).json({ error: 'Preencha todos os campos obrigatórios.' });
     }
 
@@ -75,21 +75,21 @@ router.post('/', async (req, res) => {
         name,
         driverId: parseInt(driverId),
         description,
-        origin,
+        origin: origin || undefined, // Campo opcional, usa valor padrão no DB se não informado
         destination,
         status: 'PENDENTE',
       },
     });
 
-    
-     const nfDetails = nfNumbers.map(nfNumber => ({
+    // Criar as notas fiscais associadas
+    const nfDetails = nfNumbers.map(nfNumber => ({
       shipmentId: shipment.id,
       nfNumber,
     }));
 
     await prisma.nFDetail.createMany({
       data: nfDetails,
-    }); 
+    });
 
     return res.status(201).json({
       message: 'Frete e notas fiscais cadastrados com sucesso!',
@@ -100,6 +100,7 @@ router.post('/', async (req, res) => {
     return res.status(500).json({ error: 'Erro no servidor' });
   }
 });
+
 
 
 

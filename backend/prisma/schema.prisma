@@ -28,8 +28,8 @@ model Shipment {
   name        String
   driverId    Int
   description String
-  origin      String    // Adicionado: Local de origem do frete
-  destination String   // Adicionado: Local de destino do frete
+  origin      String   @default("Extrema - MG") // Define o valor padrão
+  destination String
   status      String   @default("PENDENTE")
   createdAt   DateTime @default(now())
   finishedAt  DateTime?
