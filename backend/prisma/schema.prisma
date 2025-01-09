@@ -28,7 +28,6 @@ model Shipment {
   name        String
   driverId    Int
   description String
-  origin      String   @default("Extrema - MG") // Define o valor padrão
   destination String
   status      String   @default("PENDENTE")
   createdAt   DateTime @default(now())
