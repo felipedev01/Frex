@@ -64,9 +64,9 @@ router.get('/my-shipments', authenticateDriver, async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { name, driverId, description, destination, nfNumbers } = req.body;
+    const { name, driverId, description, nfNumbers } = req.body;
 
-    if (!name || !driverId || !description || !destination || !nfNumbers) {
+    if (!name || !driverId || !description  || !nfNumbers) {
       return res.status(400).json({ error: 'Preencha todos os campos obrigatórios.' });
     }
 
@@ -76,7 +76,6 @@ router.post('/', async (req, res) => {
         name,
         driverId: parseInt(driverId),
         description,
-        destination,
         status: 'PENDENTE',
       },
     });

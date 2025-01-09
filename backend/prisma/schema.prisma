@@ -28,7 +28,6 @@ model Shipment {
   name        String
   driverId    Int
   description String
-  destination String
   status      String   @default("PENDENTE")
   createdAt   DateTime @default(now())
   finishedAt  DateTime?
