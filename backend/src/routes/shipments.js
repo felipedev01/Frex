@@ -61,6 +61,7 @@ router.get('/my-shipments', authenticateDriver, async (req, res) => {
   }
 }); */
 
+
 router.post('/', async (req, res) => {
   try {
     const { name, driverId, description, origin, destination, nfNumbers } = req.body;
@@ -75,7 +76,7 @@ router.post('/', async (req, res) => {
         name,
         driverId: parseInt(driverId),
         description,
-        origin: origin || undefined, // Campo opcional, usa valor padrão no DB se não informado
+        origin: origin || undefined, // Usa o valor padrão no banco se não for passado
         destination,
         status: 'PENDENTE',
       },
@@ -96,7 +97,7 @@ router.post('/', async (req, res) => {
       shipment,
     });
   } catch (error) {
-    console.error('Erro ao criar frete e notas fiscais:', error);
+    console.error('Erro ao criar frete e notas fiscais:', error.message || error);
     return res.status(500).json({ error: 'Erro no servidor' });
   }
 });
