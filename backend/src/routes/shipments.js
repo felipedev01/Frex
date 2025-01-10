@@ -101,7 +101,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-console.log("teste")
 
 
 export default router;
