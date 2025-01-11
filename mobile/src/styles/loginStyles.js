@@ -4,79 +4,72 @@ export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FAF5FF',
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  title: {
-    fontSize: 32,
-    fontWeight: '600',
-    color: '#A855F7',
+  header: {
+    alignItems: 'center',
+    marginBottom: 32,
   },
-  titleBold: {
-    fontWeight: 'bold',
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
-    marginBottom: 24,
+    color: '#A855F7',
+    fontWeight: '600',
   },
   form: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    paddingHorizontal: 24,
   },
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#333',
-    marginBottom: 4,
+    color: '#4A5568',
+    marginBottom: 8,
   },
-  input: {
-    width: '100%',
-    height: 48,
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
     borderColor: '#E2E8F0',
     borderWidth: 1,
     borderRadius: 8,
+    marginBottom: 16,
     paddingHorizontal: 12,
-    marginBottom: 16,
+  },
+  input: {
+    flex: 1,
+    height: 48,
     fontSize: 16,
-    backgroundColor: '#F9FAFB',
+    color: '#4A5568',
   },
-  passwordContainer: {
-    marginBottom: 16,
-  },
-  forgotPassword: {
-    fontSize: 14,
-    color: '#A855F7',
-    textAlign: 'right',
-    marginTop: -12,
-    marginBottom: 16,
+  inputIcon: {
+    marginLeft: 8,
   },
   button: {
     backgroundColor: '#A855F7',
-    paddingVertical: 12,
     borderRadius: 8,
+    paddingVertical: 12,
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
   },
-  registerText: {
-    fontSize: 14,
+  supportText: {
     textAlign: 'center',
-    color: '#666',
+    color: '#718096',
+    fontSize: 14,
   },
-  registerLink: {
+  supportLink: {
     color: '#A855F7',
-    fontWeight: '600',
+    fontWeight: '500',
   },
 });

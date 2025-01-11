@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, ScrollView } from 'react-native';
+import { View, Text, Button, ScrollView, Alert } from 'react-native';
 import axios from 'axios';
-import styles from './styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import styles from '../styles/driverDashboardStyles';
 
-export default function DriverDashboard() {
+export default function DriverDashboard({ navigation }) {
   const [driver, setDriver] = useState({});
   const [currentShipment, setCurrentShipment] = useState(null);
   const [shipmentHistory, setShipmentHistory] = useState([]);
@@ -53,6 +53,23 @@ export default function DriverDashboard() {
     fetchShipmentHistory();
   };
 
+  const handleLogout = async () => {
+    try {
+      // Limpa o token do AsyncStorage
+      await AsyncStorage.removeItem('token');
+      Alert.alert('Logout realizado', 'Você foi desconectado com sucesso.');
+      
+      // Redireciona para a tela de login
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'LoginScreen' }], // Nome da tela de login no seu navegador
+      });
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível realizar o logout.');
+      console.error('Erro ao fazer logout:', error.message);
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Dashboard do Motorista</Text>
@@ -83,7 +100,11 @@ export default function DriverDashboard() {
           </View>
         ))}
       </View>
+
+      {/* Botão de Logout */}
+      <View style={styles.section}>
+        <Button title="Logout" onPress={handleLogout} color="#A855F7" />
+      </View>
     </ScrollView>
   );
 }
-
