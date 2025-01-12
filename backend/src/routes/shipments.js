@@ -65,8 +65,19 @@ router.post('/', async (req, res) => {
   try {
     const { name, driverId, description, origin, destination, nfNumbers } = req.body;
 
-    if (!name || !driverId || !description || !origin || !destination || !nfNumbers) {
+    if (!name || !driverId || !origin || !destination || !nfNumbers) {
       return res.status(400).json({ error: 'Preencha todos os campos obrigatórios.' });
+    }
+
+    const existingShipment = await prisma.shipment.findFirst({
+      where: {
+        driverId: parseInt(driverId),
+        status: 'PENDENTE',
+      },
+    });
+
+    if (existingShipment) {
+      return res.status(400).json({ error: 'O motorista já possui um frete pendente.' });
     }
 
     // Criar o frete (Shipment)

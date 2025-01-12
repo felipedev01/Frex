@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import Select from 'react-select';
 import { X } from 'lucide-react';
 import AsyncSelect from 'react-select/async';
-import logoFrex from '../assets/logo_frex.svg'; 
+import logoFrex from '../assets/logo_frex.svg';
 import axios from 'axios';
 
 // Componente de Alerta
 const Alert = ({ children, type }) => {
   return (
-    <div className={`p-4 rounded-lg mb-6 ${
-      type === 'error' 
-        ? 'bg-red-50 text-red-700 border border-red-200'
-        : 'bg-green-50 text-green-700 border border-green-200'
-    }`}>
+    <div className={`p-4 rounded-lg mb-6 ${type === 'error'
+      ? 'bg-red-50 text-red-700 border border-red-200'
+      : 'bg-green-50 text-green-700 border border-green-200'
+      }`}>
       {children}
     </div>
   );
@@ -99,9 +99,10 @@ const CadastroFrete = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3002/shipments', {
+      const response = await axios.post('https://frex.onrender.com/shipments', {
         name: formData.name,
         destination: formData.destination,
+        origin: 'Extrema - MG',
         nfNumbers: formData.nfList,
         driverId: formData.driverId,
         description: formData.description,
@@ -117,7 +118,12 @@ const CadastroFrete = () => {
         description: ''
       });
     } catch (error) {
-      setMessage({ type: 'error', text: 'Erro ao cadastrar frete. Verifique os dados.' });
+      if (error.response && error.response.data && error.response.data.error) {
+        // Exibe a mensagem de erro retornada pelo backend
+        setMessage({ type: 'error', text: error.response.data.error });
+      } else {
+        setMessage({ type: 'error', text: 'Erro ao cadastrar frete. Verifique os dados.' });
+      }
       console.error('Erro:', error);
     } finally {
       setLoading(false);
@@ -129,10 +135,10 @@ const CadastroFrete = () => {
       <div className="w-full max-w-[800px] bg-white rounded-xl shadow-lg p-8 border border-purple-100 flex flex-col justify-between" style={{ height: '90vh' }}>
         <div>
           <div className="text-center mb-10">
-            <img 
+            <img
               src={logoFrex}
-              alt="FreX Logo" 
-              className="h-12 mx-auto mb-2" 
+              alt="FreX Logo"
+              className="h-12 mx-auto mb-2"
             />
             <h2 className="text-2xl font-bold text-purple-600">
               Cadastro de Frete
@@ -198,20 +204,59 @@ const CadastroFrete = () => {
                   >
                     Adicionar
                   </button>
-                  <select
-                    name="driverId"
-                    value={formData.driverId}
-                    onChange={handleChange}
-                    className="flex-1 px-4 py-3 text-lg border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    required
-                  >
-                    <option value="">Selecione um motorista</option>
-                    {drivers.map(driver => (
-                      <option key={driver.id} value={driver.id}>
-                        {`${driver.name} - ${driver.transportCompany} (${driver.licensePlate})`}
-                      </option>
-                    ))}
-                  </select>
+                  {
+
+                    <Select
+                      options={drivers.map(driver => ({
+                        value: driver.id,
+                        label: `${driver.name} - ${driver.transportCompany} (${driver.licensePlate})`,
+                      }))}
+                      onChange={(selectedOption) => handleChange({ target: { name: 'driverId', value: selectedOption.value } })}
+                      placeholder="Selecione um motorista"
+                      isClearable
+                      className="flex-1"
+                      classNamePrefix="react-select"
+                      styles={{
+                        control: (base) => ({
+                          ...base,
+                          padding: '6px',
+                          borderRadius: '8px',
+                          borderColor: '#D1D5DB',
+                          boxShadow: 'none',
+                          '&:hover': { borderColor: '#7C3AED' },
+                        }),
+                        menu: (base) => ({
+                          ...base,
+                          maxHeight: '192px', // Define a altura máxima do dropdown
+                          overflowY: 'auto', // Habilita a rolagem para o conteúdo
+                          width: '300px', // Define uma largura fixa para o menu
+                        }),
+                        menuList: (base) => ({
+                          ...base,
+                          maxHeight: '192px', // Adiciona limite de altura para a lista
+                          overflowY: 'auto', // Adiciona rolagem para a lista de opções
+                        }),
+                      }}
+                    />
+
+
+                    /*  <select
+                     name="driverId"
+                     value={formData.driverId}
+                     onChange={handleChange}
+                     className="flex-1 px-1 py-3 text-lg border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 max-h-48 overflow-y-auto"
+                     required
+                   >
+                     <option value="">Selecione um motorista</option>
+                     {drivers.map(driver => (
+                       <option key={driver.id} value={driver.id}>
+                         {`${driver.name} - ${driver.transportCompany} (${driver.licensePlate})`}
+                       </option>
+                     ))}
+                   </select> */
+
+
+                  }
                 </div>
                 <div className="mt-4 h-24 overflow-y-auto">
                   <p className="text-lg text-gray-600 mb-2">
@@ -219,7 +264,7 @@ const CadastroFrete = () => {
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {formData.nfList.map((nf) => (
-                      <div 
+                      <div
                         key={nf}
                         className="flex items-center gap-2 bg-purple-50 px-4 py-2 rounded-full border border-purple-200"
                       >
@@ -250,19 +295,19 @@ const CadastroFrete = () => {
                 />
               </div>
             </div>
-          </form>
-        </div>
 
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={loading}
-            className={`py-4 px-8 text-xl font-medium rounded-lg text-white transition-colors ${
-              loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
-            }`}
-          >
-            {loading ? 'Cadastrando...' : 'Cadastrar Frete'}
-          </button>
+            {/* Botão de envio */}
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={loading}
+                className={`py-4 px-8 text-xl font-medium rounded-lg text-white transition-colors ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
+                  }`}
+              >
+                {loading ? 'Cadastrando...' : 'Cadastrar Frete'}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -270,3 +315,4 @@ const CadastroFrete = () => {
 };
 
 export default CadastroFrete;
+
