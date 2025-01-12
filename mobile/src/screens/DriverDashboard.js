@@ -7,6 +7,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 export default function DriverDashboard({ navigation }) {
   const [driver, setDriver] = useState({});
   const [currentShipment, setCurrentShipment] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchDriverData();
@@ -24,30 +25,29 @@ export default function DriverDashboard({ navigation }) {
           Authorization: `Bearer ${token}`,
         },
       });
-      
 
       const driverData = response.data;
       setDriver(driverData);
 
-      const pendingShipment = driverData.shipments.find(
-        (shipment) => shipment.status === 'PENDENTE'
-      );
+      const shipmentResponse = await axios.get('https://frex.onrender.com/drivers/current-shipment', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const pendingShipment = shipmentResponse.data;
       setCurrentShipment(pendingShipment || null);
+
     } catch (error) {
       console.error('Erro ao buscar dados do motorista:', error.message);
       Alert.alert('Erro', 'Não foi possível carregar os dados do motorista.');
     }
-
-    const response = await axios.get('https://frex.onrender.com/drivers/current-shipment', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    const pendingShipment = response.data
-    setCurrentShipment(pendingShipment || null);
   };
 
   const handleFinishShipment = async () => {
+    if (!currentShipment) return;
+    setLoading(true);
+
     try {
       await axios.post(
         'https://frex.onrender.com/driver/finish-shipment',
@@ -64,6 +64,8 @@ export default function DriverDashboard({ navigation }) {
     } catch (error) {
       console.error('Erro ao finalizar frete:', error.message);
       Alert.alert('Erro', 'Não foi possível finalizar o frete.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,59 +82,62 @@ export default function DriverDashboard({ navigation }) {
 
       {currentShipment ? (
         <View style={styles.card}>
-          {/* Location Card */}
           <View style={styles.locationCard}>
             <View style={styles.section}>
               <Ionicons name="location-outline" size={20} color="#9333EA" />
               <View style={styles.textGroup}>
                 <Text style={styles.label}>Origem</Text>
-                <Text style={styles.value}>{currentShipment.origin || "São Paulo, SP"}</Text>
+                <Text style={styles.value}>{currentShipment.origin || "Não especificado"}</Text>
               </View>
             </View>
-
             <View style={styles.section}>
               <Ionicons name="location-outline" size={20} color="#9333EA" />
               <View style={styles.textGroup}>
                 <Text style={styles.label}>Destino</Text>
-                <Text style={styles.value}>{currentShipment.destination || "Campinas, SP"}</Text>
+                <Text style={styles.value}>{currentShipment.destination || "Não especificado"}</Text>
               </View>
             </View>
           </View>
 
-          {/* Cargo */}
           <View style={styles.section}>
             <MaterialIcons name="inventory" size={20} color="#9333EA" />
             <View style={styles.textGroup}>
               <Text style={styles.label}>Carga</Text>
-              <Text style={styles.value}>{currentShipment.name || "Eletrônicos"}</Text>
+              <Text style={styles.value}>{currentShipment.name || "Não especificado"}</Text>
             </View>
           </View>
 
-          {/* Driver */}
           <View style={styles.section}>
             <MaterialIcons name="person" size={20} color="#9333EA" />
             <View style={styles.textGroup}>
               <Text style={styles.label}>Motorista</Text>
               <Text style={styles.value}>
-                {driver.name || "João Silva"} • {driver.licensePlate || "ABC-1234"}
+                {driver.name || "Desconhecido"} • {driver.licensePlate || "Não especificado"}
               </Text>
             </View>
           </View>
 
-          {/* Invoices Button */}
           <TouchableOpacity
             style={styles.notesButton}
             onPress={() => navigation.navigate('NotasFiscais', { shipmentId: currentShipment.id })}
           >
             <View>
               <Text style={styles.notesText}>Notas Fiscais</Text>
-              <Text style={styles.notesSubText}>{currentShipment.length}</Text>
+              <Text style={styles.notesSubText}>
+                {currentShipment.nfDetails ? currentShipment.nfDetails.length : 0}
+              </Text>
             </View>
             <MaterialIcons name="chevron-right" size={24} color="#9333EA" style={{ opacity: 0.6 }} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.finishButton} onPress={handleFinishShipment}>
-            <Text style={styles.finishButtonText}>Finalizar Frete</Text>
+          <TouchableOpacity
+            style={styles.finishButton}
+            onPress={handleFinishShipment}
+            disabled={loading}
+          >
+            <Text style={styles.finishButtonText}>
+              {loading ? 'Finalizando...' : 'Finalizar Frete'}
+            </Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -143,6 +148,7 @@ export default function DriverDashboard({ navigation }) {
     </SafeAreaView>
   );
 }
+
 
 const styles = {
   container: {
@@ -162,23 +168,28 @@ const styles = {
     fontSize: 16,
     color: '#B088F9',
     marginBottom: 24,
-    width:"100%",
-    textAlign:'center'
+    textAlign: 'center',
   },
   card: {
     flex: 1,
     paddingHorizontal: 20,
+    marginTop: 20,
   },
   locationCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
     padding: 16,
     marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
   },
   section: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   textGroup: {
     marginLeft: 12,
@@ -201,7 +212,12 @@ const styles = {
     borderRadius: 8,
     padding: 16,
     marginTop: 8,
-    marginBottom: 8,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
   },
   notesText: {
     fontSize: 16,
@@ -223,7 +239,7 @@ const styles = {
   finishButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   emptyState: {
     flex: 1,
