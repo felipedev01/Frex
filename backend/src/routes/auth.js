@@ -7,6 +7,28 @@ const router = express.Router();
 const prisma = new PrismaClient();
 
 // Cadastro de Motorista
+
+router.get('/validate-token', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ valid: false, message: 'Token não fornecido.' });
+  }
+
+  try {
+    // Verifica se o token é válido
+    jwt.verify(token, process.env.SECRET_KEY);
+    return res.status(200).json({ valid: true });
+  } catch (error) {
+    return res.status(401).json({ valid: false, message: 'Token inválido ou expirado.' });
+  }
+});
+
+module.exports = router;
+
+
+
+
 router.post('/register', async (req, res) => {
   const { name, email, password, transportCompany, licensePlate } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);

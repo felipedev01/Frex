@@ -1,110 +1,226 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, ScrollView, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, Image, SafeAreaView } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import styles from '../styles/driverDashboardStyles';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 
 export default function DriverDashboard({ navigation }) {
   const [driver, setDriver] = useState({});
   const [currentShipment, setCurrentShipment] = useState(null);
-  const [shipmentHistory, setShipmentHistory] = useState([]);
 
   useEffect(() => {
     fetchDriverData();
-    fetchCurrentShipment();
-    fetchShipmentHistory();
   }, []);
 
   const fetchDriverData = async () => {
     try {
-      const token = await AsyncStorage.getItem('token'); // Obtém o token do armazenamento local
-      
+      const token = await AsyncStorage.getItem('token');
       if (!token) {
         throw new Error('Token não encontrado. Faça login novamente.');
       }
-  
+
       const response = await axios.get('https://frex.onrender.com/drivers/me', {
         headers: {
-          Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho
+          Authorization: `Bearer ${token}`,
         },
       });
-  
-      setDriver(response.data);
+
+      const driverData = response.data;
+      setDriver(driverData);
+
+      const pendingShipment = driverData.shipments.find(
+        (shipment) => shipment.status === 'PENDENTE'
+      );
+      setCurrentShipment(pendingShipment || null);
     } catch (error) {
-      console.error('Erro ao buscar dados do motorista:', error.response?.data || error.message);
+      console.error('Erro ao buscar dados do motorista:', error.message);
+      Alert.alert('Erro', 'Não foi possível carregar os dados do motorista.');
     }
   };
 
-  const fetchCurrentShipment = async () => {
-    const response = await axios.get('https://frex.onrender.com/driver/current-shipment');
-    setCurrentShipment(response.data);
-  };
-
-  const fetchShipmentHistory = async () => {
-    const response = await axios.get('https://frex.onrender.com/driver/shipment-history');
-    setShipmentHistory(response.data);
-  };
-
   const handleFinishShipment = async () => {
-    await axios.post('https://frex.onrender.com/driver/finish-shipment', {
-      shipmentId: currentShipment.id,
-    });
-    setCurrentShipment(null);
-    fetchShipmentHistory();
-  };
-
-  const handleLogout = async () => {
     try {
-      // Limpa o token do AsyncStorage
-      await AsyncStorage.removeItem('token');
-      Alert.alert('Logout realizado', 'Você foi desconectado com sucesso.');
-      
-      // Redireciona para a tela de login
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'LoginScreen' }], // Nome da tela de login no seu navegador
-      });
+      await axios.post(
+        'https://frex.onrender.com/driver/finish-shipment',
+        { shipmentId: currentShipment.id },
+        {
+          headers: {
+            Authorization: `Bearer ${await AsyncStorage.getItem('token')}`,
+          },
+        }
+      );
+      Alert.alert('Sucesso', 'Frete finalizado com sucesso!');
+      setCurrentShipment(null);
+      fetchDriverData();
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível realizar o logout.');
-      console.error('Erro ao fazer logout:', error.message);
+      console.error('Erro ao finalizar frete:', error.message);
+      Alert.alert('Erro', 'Não foi possível finalizar o frete.');
     }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Dashboard do Motorista</Text>
-      <View style={styles.section}>
-        <Text>Nome: {driver.name}</Text>
-        <Text>Email: {driver.email}</Text>
-        <Text>Status: {currentShipment ? 'Carga Pendente' : 'Nenhuma carga pendente'}</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Image 
+          source={require('../assets/logo_frex.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.subHeader}>Frete Atual</Text>
       </View>
 
-      {currentShipment && (
-        <View style={styles.section}>
-          <Text>Carga Atual:</Text>
-          <Text>ID: {currentShipment.id}</Text>
-          <Text>Descrição: {currentShipment.description}</Text>
-          <Text>Destino: {currentShipment.destination}</Text>
-          <Button title="Finalizar Carga" onPress={handleFinishShipment} />
+      {currentShipment ? (
+        <View style={styles.card}>
+          {/* Location Card */}
+          <View style={styles.locationCard}>
+            <View style={styles.section}>
+              <Ionicons name="location-outline" size={20} color="#9333EA" />
+              <View style={styles.textGroup}>
+                <Text style={styles.label}>Origem</Text>
+                <Text style={styles.value}>{currentShipment.origin || "São Paulo, SP"}</Text>
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <Ionicons name="location-outline" size={20} color="#9333EA" />
+              <View style={styles.textGroup}>
+                <Text style={styles.label}>Destino</Text>
+                <Text style={styles.value}>{currentShipment.destination || "Campinas, SP"}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Cargo */}
+          <View style={styles.section}>
+            <MaterialIcons name="inventory" size={20} color="#9333EA" />
+            <View style={styles.textGroup}>
+              <Text style={styles.label}>Carga</Text>
+              <Text style={styles.value}>{currentShipment.description || "Eletrônicos"}</Text>
+            </View>
+          </View>
+
+          {/* Driver */}
+          <View style={styles.section}>
+            <MaterialIcons name="person" size={20} color="#9333EA" />
+            <View style={styles.textGroup}>
+              <Text style={styles.label}>Motorista</Text>
+              <Text style={styles.value}>
+                {driver.name || "João Silva"} • {driver.licensePlate || "ABC-1234"}
+              </Text>
+            </View>
+          </View>
+
+          {/* Invoices Button */}
+          <TouchableOpacity
+            style={styles.notesButton}
+            onPress={() => navigation.navigate('NotasFiscais', { shipmentId: currentShipment.id })}
+          >
+            <View>
+              <Text style={styles.notesText}>Notas Fiscais</Text>
+              <Text style={styles.notesSubText}>20 notas para baixar</Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color="#9333EA" style={{ opacity: 0.6 }} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.finishButton} onPress={handleFinishShipment}>
+            <Text style={styles.finishButtonText}>Finalizar Frete</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>Nenhum frete no momento</Text>
         </View>
       )}
-
-      <View style={styles.section}>
-        <Text>Histórico de Cargas:</Text>
-        {shipmentHistory.map((shipment) => (
-          <View key={shipment.id}>
-            <Text>ID: {shipment.id}</Text>
-            <Text>Descrição: {shipment.description}</Text>
-            <Text>Destino: {shipment.destination}</Text>
-            <Text>Data de Conclusão: {shipment.endDate}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* Botão de Logout */}
-      <View style={styles.section}>
-        <Button title="Logout" onPress={handleLogout} color="#A855F7" />
-      </View>
-    </ScrollView>
+    </SafeAreaView>
   );
 }
+
+const styles = {
+  container: {
+    flex: 1,
+    backgroundColor: '#FAF5FF',
+  },
+  headerContainer: {
+    alignItems: 'center',
+    marginTop: 40,
+  },
+  logo: {
+    height: 40,
+    width: 120,
+    marginBottom: 8,
+  },
+  subHeader: {
+    fontSize: 16,
+    color: '#B088F9',
+    marginBottom: 24,
+  },
+  card: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  locationCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 24,
+  },
+  section: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 24,
+  },
+  textGroup: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  label: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+  value: {
+    fontSize: 16,
+    color: '#374151',
+  },
+  notesButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  notesText: {
+    fontSize: 16,
+    color: '#374151',
+    marginBottom: 4,
+  },
+  notesSubText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+  },
+  finishButton: {
+    backgroundColor: '#9333EA',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 'auto',
+    marginBottom: 32,
+  },
+  finishButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#6B7280',
+  },
+};
