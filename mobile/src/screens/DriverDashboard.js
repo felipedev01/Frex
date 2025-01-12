@@ -24,6 +24,7 @@ export default function DriverDashboard({ navigation }) {
           Authorization: `Bearer ${token}`,
         },
       });
+      
 
       const driverData = response.data;
       setDriver(driverData);
@@ -36,6 +37,14 @@ export default function DriverDashboard({ navigation }) {
       console.error('Erro ao buscar dados do motorista:', error.message);
       Alert.alert('Erro', 'Não foi possível carregar os dados do motorista.');
     }
+
+    const response = await axios.get('https://frex.onrender.com/drivers/current-shipment', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const pendingShipment = response.data
+    setCurrentShipment(pendingShipment || null);
   };
 
   const handleFinishShipment = async () => {
@@ -95,7 +104,7 @@ export default function DriverDashboard({ navigation }) {
             <MaterialIcons name="inventory" size={20} color="#9333EA" />
             <View style={styles.textGroup}>
               <Text style={styles.label}>Carga</Text>
-              <Text style={styles.value}>{currentShipment.description || "Eletrônicos"}</Text>
+              <Text style={styles.value}>{currentShipment.name || "Eletrônicos"}</Text>
             </View>
           </View>
 
@@ -117,7 +126,7 @@ export default function DriverDashboard({ navigation }) {
           >
             <View>
               <Text style={styles.notesText}>Notas Fiscais</Text>
-              <Text style={styles.notesSubText}>20 notas para baixar</Text>
+              <Text style={styles.notesSubText}>{currentShipment.length}</Text>
             </View>
             <MaterialIcons name="chevron-right" size={24} color="#9333EA" style={{ opacity: 0.6 }} />
           </TouchableOpacity>
@@ -153,6 +162,8 @@ const styles = {
     fontSize: 16,
     color: '#B088F9',
     marginBottom: 24,
+    width:"100%",
+    textAlign:'center'
   },
   card: {
     flex: 1,
