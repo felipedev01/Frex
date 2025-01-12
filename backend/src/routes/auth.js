@@ -24,10 +24,6 @@ router.get('/validate-token', (req, res) => {
   }
 });
 
-module.exports = router;
-
-
-
 
 router.post('/register', async (req, res) => {
   const { name, email, password, transportCompany, licensePlate } = req.body;
