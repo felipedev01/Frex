@@ -75,7 +75,10 @@ router.get('/current-shipment', authenticateToken, async (req, res) => {
       where: {
         driverId: driverId,
         status: 'PENDENTE'
-      }
+      },
+      include: {
+        nfDetails: true,    // Inclui os detalhes das notas fiscais
+      },
     });
 
     if (!currentShipment) {
