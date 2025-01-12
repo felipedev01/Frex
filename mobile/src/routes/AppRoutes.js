@@ -16,7 +16,10 @@ export default function AppRoutes() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    validateToken();
+
+   AsyncStorage.removeItem('token');
+    
+    /* validateToken(); */
   }, []);
 
   const validateToken = async () => {
@@ -29,7 +32,8 @@ export default function AppRoutes() {
       }
 
       // Faz uma requisição ao backend para validar o token
-      const response = await axios.get('https://frex.onrender.com/auth/validate-token', {
+      const response = await axios.get('https://frex.onrender.com/auth/validate-token', { 
+
         headers: {
           Authorization: `Bearer ${storedToken}`,
         },
@@ -37,11 +41,11 @@ export default function AppRoutes() {
 
       if (response.data.valid) {
         setToken(storedToken); // Atualiza o contexto com o token válido
+      
       } else {
         throw new Error('Token expirado ou inválido.');
       }
     } catch (error) {
-      console.error('Erro na validação do token:', error.message);
       Alert.alert('Sessão expirada', 'Faça login novamente.');
       await AsyncStorage.removeItem('token'); // Remove o token inválido do armazenamento
       setToken(null); // Define o token no contexto como nulo
@@ -50,14 +54,14 @@ export default function AppRoutes() {
     }
   };
 
-  if (loading) {
+  /* if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#A855F7" />
         <Text>Verificando sessão...</Text>
       </View>
     );
-  }
+  } */
 
   return (
     <NavigationContainer>
