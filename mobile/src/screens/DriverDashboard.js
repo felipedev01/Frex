@@ -72,7 +72,7 @@ export default function DriverDashboard({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerContainer}>
-        <Image 
+        <Image
           source={require('../assets/logo_frex.png')}
           style={styles.logo}
           resizeMode="contain"
@@ -119,7 +119,7 @@ export default function DriverDashboard({ navigation }) {
 
           <TouchableOpacity
             style={styles.notesButton}
-            onPress={() => navigation.navigate('NotasFiscais', { shipmentId: currentShipment.id })}
+            onPress={() => navigation.navigate('NotasFiscais', { nfDetails: currentShipment.nfDetails })}
           >
             <View>
               <Text style={styles.notesText}>Notas Fiscais</Text>
@@ -129,6 +129,8 @@ export default function DriverDashboard({ navigation }) {
             </View>
             <MaterialIcons name="chevron-right" size={24} color="#9333EA" style={{ opacity: 0.6 }} />
           </TouchableOpacity>
+
+
 
           <TouchableOpacity
             style={styles.finishButton}

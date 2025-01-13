@@ -8,6 +8,7 @@ import { AuthContext } from '../contexts/AuthContext';
 
 import LoginScreen from '../screens/LoginScreen';
 import DriverDashboard from '../screens/DriverDashboard';
+import NotaFiscaisScreen from '../screens/NotaFiscaisScreen'; // Importe o novo componente
 
 const Stack = createStackNavigator();
 
@@ -63,23 +64,31 @@ export default function AppRoutes() {
     );
   } */
 
-  return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        {!token ? (
-          <Stack.Screen
-            name="Login"
-            component={LoginScreen}
-            options={{ headerShown: false }}
-          />
-        ) : (
-          <Stack.Screen
-            name="DriverDashboard"
-            component={DriverDashboard}
-            options={{ headerShown: false }}
-          />
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
+  
+    return (
+      <NavigationContainer>
+        <Stack.Navigator>
+          {!token ? (
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+              options={{ headerShown: false }}
+            />
+          ) : (
+            <>
+              <Stack.Screen
+                name="DriverDashboard"
+                component={DriverDashboard}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="NotasFiscais"
+                component={NotaFiscaisScreen}
+                options={{ title: 'Notas Fiscais', headerShown: true }}
+              />
+            </>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    );
 }
