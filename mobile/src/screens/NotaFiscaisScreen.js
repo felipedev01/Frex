@@ -1,17 +1,25 @@
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 
-export default function NotaFiscaisScreen({ route }) {
+export default function NotaFiscaisScreen({ route, navigation }) {
   const { nfDetails } = route.params; // Dados passados da tela anterior
 
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
       <View style={styles.nfInfo}>
         <Text style={styles.nfNumber}>NF-{item.nfNumber}</Text>
-        <Text style={styles.status}>Pendente</Text>
+        <Text style={styles.status}>{item.status || 'Pendente'}</Text>
       </View>
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.downloadButton}>
+        <TouchableOpacity
+          style={styles.downloadButton}
+          onPress={() =>
+            navigation.navigate('ComprovanteEntrega', {
+              nfNumber: item.nfNumber,
+              nfId: item.id,
+            })
+          }
+        >
           <Text style={styles.downloadButtonText}>Baixar NF</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.reportButton}>

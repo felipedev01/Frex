@@ -9,6 +9,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import LoginScreen from '../screens/LoginScreen';
 import DriverDashboard from '../screens/DriverDashboard';
 import NotaFiscaisScreen from '../screens/NotaFiscaisScreen'; // Importe o novo componente
+import ComprovanteEntregaScreen from '../screens/ComprovanteEntregaScreen';
 
 const Stack = createStackNavigator();
 
@@ -86,6 +87,11 @@ export default function AppRoutes() {
                 component={NotaFiscaisScreen}
                 options={{ title: 'Notas Fiscais', headerShown: true }}
               />
+              <Stack.Screen
+              name="ComprovanteEntrega"
+              component={ComprovanteEntregaScreen}
+              options={{ title: 'Comprovante de Entrega', headerShown: true }}
+            />
             </>
           )}
         </Stack.Navigator>

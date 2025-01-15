@@ -9,6 +9,19 @@
       "image": "./src/assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
-    }
+    },
+    "android": {
+      "package": "com.felipecs88.frex",
+      "permissions": ["CAMERA"]
+    },
+    "ios": {
+      "bundleIdentifier": "com.felipecs88.frex",
+      "infoPlist": {
+        "NSCameraUsageDescription": "O app precisa de acesso à câmera para tirar fotos dos comprovantes."
+      }
+    },
+    "plugins": [
+      "expo-image-picker"
+    ]
   }
 }
