@@ -41,13 +41,8 @@ export const uploadToB2 = async (file) => {
 
     console.log('✅ Upload bem-sucedido:', response.data);
 
-    // Se bucket for público, retorna URL direta
-    if (process.env.B2_BUCKET_TYPE === 'public') {
-      return `https://f002.backblazeb2.com/file/${process.env.B2_BUCKET_NAME}/${response.data.fileName}`;
-    } else {
-      // Gera URL assinada para bucket privado
-      return await getDownloadUrl(response.data.fileName);
-    }
+    // Retorna URL pública
+    return `https://f002.backblazeb2.com/file/${process.env.B2_BUCKET_NAME}/${response.data.fileName}`;
   } catch (error) {
     console.error('❌ Erro ao fazer upload para Backblaze B2:', error.response?.data || error.message || error);
     throw new Error('Erro ao fazer upload para Backblaze B2');
