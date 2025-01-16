@@ -11,7 +11,6 @@ export default function ComprovanteEntregaScreen({ route, navigation }) {
 
   const handleTakePhoto = async () => {
     try {
-      // Solicita permissão para usar a câmera
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       
       if (status !== 'granted') {
@@ -19,11 +18,9 @@ export default function ComprovanteEntregaScreen({ route, navigation }) {
         return;
       }
 
-      // Abre a câmera
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         quality: 0.7,
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
       });
 
       if (!result.canceled) {
@@ -40,40 +37,72 @@ export default function ComprovanteEntregaScreen({ route, navigation }) {
       Alert.alert('Erro', 'Tire uma foto antes de salvar o comprovante.');
       return;
     }
-
+  
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) throw new Error('Token não encontrado');
-
+  
+      // Log dos dados que serão enviados
+      console.log('URI da foto:', photo.uri);
+      console.log('NF ID:', nfId);
+  
       const formData = new FormData();
       formData.append('proofImage', {
         uri: photo.uri,
         type: 'image/jpeg',
         name: `comprovante_nf_${nfId}.jpg`,
       });
-
-      await axios.post(
-        `https://frex.onrender.com/finalize-nf/${nfId}`,
+  
+      // Log do formData
+      console.log('FormData:', formData);
+  
+      const response = await axios.post(
+        `http://localhost:3002/drivers/finalize-nf/${nfId}`,
         formData,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
           },
+          timeout: 10000, // 10 segundos de timeout
         }
       );
-
+  
+      // Log da resposta
+      console.log('Resposta do servidor:', response.data);
+  
       Alert.alert('Sucesso', 'Comprovante enviado com sucesso!', [
         { text: 'OK', onPress: () => navigation.goBack() }
       ]);
     } catch (error) {
-      console.error('Erro ao salvar comprovante:', error);
-      Alert.alert('Erro', 'Não foi possível salvar o comprovante.');
+      console.error('Erro completo:', error);
+      console.error('Detalhes do erro:', error.response?.data);
+      console.error('Status do erro:', error.response?.status);
+  
+      let mensagemErro = 'Não foi possível salvar o comprovante.';
+      
+      if (error.response) {
+        // O servidor respondeu com um status de erro
+        if (error.response.status === 500) {
+          mensagemErro = 'Erro no servidor. Por favor, tente novamente em alguns instantes.';
+        } else if (error.response.status === 413) {
+          mensagemErro = 'A imagem é muito grande. Por favor, tire uma nova foto.';
+        } else if (error.response.status === 401) {
+          mensagemErro = 'Sessão expirada. Por favor, faça login novamente.';
+          // Opcional: redirecionar para tela de login
+          navigation.navigate('Login');
+        }
+      } else if (error.request) {
+        // A requisição foi feita mas não houve resposta
+        mensagemErro = 'Erro de conexão. Verifique sua internet e tente novamente.';
+      }
+  
+      Alert.alert('Erro', mensagemErro);
     } finally {
       setLoading(false);
     }
-  };
+  [ ] };
 
   return (
     <View style={styles.container}>

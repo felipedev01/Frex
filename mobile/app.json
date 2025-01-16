@@ -22,6 +22,7 @@
     },
     "plugins": [
       "expo-image-picker"
-    ]
+    ],
+    "newArchEnabled": true
   }
 }
