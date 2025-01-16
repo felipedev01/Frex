@@ -58,7 +58,7 @@ export default function ComprovanteEntregaScreen({ route, navigation }) {
       console.log('FormData:', formData);
   
       const response = await axios.post(
-        `http://localhost:3002/drivers/finalize-nf/${nfId}`,
+        `https://frex.onrender.com/drivers/finalize-nf/${nfId}`,
         formData,
         {
           headers: {
