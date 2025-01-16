@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 
 export default function NotaFiscaisScreen({ route, navigation }) {
-  const { nfDetails } = route.params; // Dados passados da tela anterior
+  const [nfDetails, setNfDetails] = useState(route.params.nfDetails); // Lista de notas fiscais
+
+  const handleRemoveItem = (nfId) => {
+    setNfDetails((prevDetails) => prevDetails.filter((item) => item.id !== nfId));
+  };
 
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
@@ -15,8 +19,8 @@ export default function NotaFiscaisScreen({ route, navigation }) {
           style={styles.downloadButton}
           onPress={() =>
             navigation.navigate('ComprovanteEntrega', {
-              nfNumber: item.nfNumber,
               nfId: item.id,
+              onComplete: () => handleRemoveItem(item.id), // Passa o callback para remover item
             })
           }
         >
