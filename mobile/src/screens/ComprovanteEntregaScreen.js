@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 export default function ComprovanteEntregaScreen({ route, navigation }) {
-  const { nfId,nfNumber } = route.params;
+  const { nfId, nfNumber } = route.params;
   const [photo, setPhoto] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -41,11 +41,10 @@ export default function ComprovanteEntregaScreen({ route, navigation }) {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem('token');
-      if (!token) throw new Error('Token não encontrado');
-  
-      // Log dos dados que serão enviados
-      console.log('URI da foto:', photo.uri);
-      console.log('NF ID:', nfId);
+      if (!token) {
+        navigation.navigate('Login');
+        throw new Error('Token não encontrado');
+      }
   
       const formData = new FormData();
       formData.append('proofImage', {
@@ -54,10 +53,7 @@ export default function ComprovanteEntregaScreen({ route, navigation }) {
         name: `comprovante_nf_${nfId}.jpg`,
       });
   
-      // Log do formData
-      console.log('FormData:', formData);
-  
-      const response = await axios.post(
+      await axios.post(
         `https://frex.onrender.com/drivers/finalize-nf/${nfId}`,
         formData,
         {
@@ -65,44 +61,35 @@ export default function ComprovanteEntregaScreen({ route, navigation }) {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
           },
-          timeout: 10000, // 10 segundos de timeout
         }
       );
   
-      // Log da resposta
-      console.log('Resposta do servidor:', response.data);
-  
       Alert.alert('Sucesso', 'Comprovante enviado com sucesso!', [
-        { text: 'OK', onPress: () => navigation.goBack() }
+        { 
+          text: 'OK', 
+          onPress: () => navigation.goBack()
+        }
       ]);
     } catch (error) {
-      console.error('Erro completo:', error);
-      console.error('Detalhes do erro:', error.response?.data);
-      console.error('Status do erro:', error.response?.status);
-  
-      let mensagemErro = 'Não foi possível salvar o comprovante.';
+      console.error('Erro ao salvar comprovante:', error);
+      let mensagem = 'Não foi possível salvar o comprovante.';
       
-      if (error.response) {
-        // O servidor respondeu com um status de erro
-        if (error.response.status === 500) {
-          mensagemErro = 'Erro no servidor. Por favor, tente novamente em alguns instantes.';
-        } else if (error.response.status === 413) {
-          mensagemErro = 'A imagem é muito grande. Por favor, tire uma nova foto.';
-        } else if (error.response.status === 401) {
-          mensagemErro = 'Sessão expirada. Por favor, faça login novamente.';
-          // Opcional: redirecionar para tela de login
-          navigation.navigate('Login');
-        }
-      } else if (error.request) {
-        // A requisição foi feita mas não houve resposta
-        mensagemErro = 'Erro de conexão. Verifique sua internet e tente novamente.';
+      // Só navega para login se for erro de autenticação
+      if (error.response?.status === 401) {
+        mensagem = 'Sessão expirada. Por favor, faça login novamente.';
+        Alert.alert('Erro', mensagem, [
+          { 
+            text: 'OK', 
+            onPress: () => navigation.navigate('Login')
+          }
+        ]);
+      } else {
+        Alert.alert('Erro', mensagem);
       }
-  
-      Alert.alert('Erro', mensagemErro);
     } finally {
       setLoading(false);
     }
-  [ ] };
+  };
 
   return (
     <View style={styles.container}>

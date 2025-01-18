@@ -8,7 +8,6 @@ export default function NotasFiscaisScreen({ navigation }) {
   const [notasFiscais, setNotasFiscais] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Função para buscar notas fiscais atualizadas
   const fetchNotasFiscais = React.useCallback(async () => {
     try {
       setLoading(true);
@@ -28,10 +27,25 @@ export default function NotasFiscaisScreen({ navigation }) {
       const notasPendentes = response.data.nfDetails.filter(
         nf => nf.status === 'PENDENTE'
       );
+      
       setNotasFiscais(notasPendentes);
+
+     
     } catch (error) {
-      console.error('Erro ao buscar notas fiscais:', error);
-      let mensagem = 'Não foi possível carregar as notas fiscais.';
+
+      if (error.response?.status === 404) {
+        // Quando o backend retorna que não há mais cargas pendentes
+        if (error.response.data?.error === 'Nenhuma carga pendente encontrada') {
+          Alert.alert('Sucesso', 'Todas as notas fiscais foram baixadas!', [
+            { 
+              text: 'OK', 
+              onPress: () => navigation.goBack()
+            }
+          ]);
+        }
+        setNotasFiscais([]);
+      } 
+      
       
       if (error.response?.status === 401) {
         mensagem = 'Sessão expirada. Por favor, faça login novamente.';
@@ -44,7 +58,6 @@ export default function NotasFiscaisScreen({ navigation }) {
     }
   }, [navigation]);
 
-  // Atualiza a lista quando a tela recebe foco
   useFocusEffect(
     React.useCallback(() => {
       fetchNotasFiscais();
@@ -54,16 +67,7 @@ export default function NotasFiscaisScreen({ navigation }) {
   const handleNFPress = (nf) => {
     navigation.navigate('ComprovanteEntrega', {
       nfId: nf.id,
-      nfNumber: nf.nfNumber,
-      onFinalizacao: async (nfId) => {
-        // Atualiza a lista localmente primeiro para feedback imediato
-        setNotasFiscais(current => 
-          current.filter(nota => nota.id !== nfId)
-        );
-        
-        // Recarrega os dados do servidor para garantir sincronização
-        await fetchNotasFiscais();
-      }
+      nfNumber: nf.nfNumber
     });
   };
 
@@ -83,9 +87,7 @@ export default function NotasFiscaisScreen({ navigation }) {
         <TouchableOpacity 
           style={styles.reportButton}
           onPress={() => navigation.navigate('ReportarProblema', { 
-            nfId: item.id,
-            nfNumber:item.nfNumber,
-            onProblemaReportado: fetchNotasFiscais
+            nfId: item.id
           })}
         >
           <Text style={styles.reportButtonText}>Reportar Problema</Text>

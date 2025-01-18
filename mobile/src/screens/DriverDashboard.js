@@ -1,20 +1,15 @@
-import React, { useEffect,useState} from 'react';
-import { useFocusEffect } from '@react-navigation/native';
-import { View, Text, TouchableOpacity, Alert, Image, SafeAreaView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, Alert, Image, SafeAreaView,StyleSheet } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function DriverDashboard({ navigation }) {
   const [driver, setDriver] = useState({});
   const [currentShipment, setCurrentShipment] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchDriverData();
-    }, [])
-  );
   const fetchDriverData = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -41,28 +36,45 @@ export default function DriverDashboard({ navigation }) {
       setCurrentShipment(pendingShipment || null);
 
     } catch (error) {
-      console.error('Erro ao buscar dados do motorista:', error.message);
-      Alert.alert('Erro', 'Não foi possível carregar os dados do motorista.');
+      
+      if (error.response?.status === 404) {
+              // Quando o backend retorna que não há mais cargas pendentes
+              if (error.response.data?.error === 'Nenhuma carga pendente encontrada') {
+                setCurrentShipment(null)
+              }
+              
+            } 
+      if (error.response?.status === 401) {
+        navigation.navigate('Login');
+        Alert.alert('Erro', 'Sessão expirada. Por favor, faça login novamente.');
+      } 
     }
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchDriverData();
+    }, [])
+  );
 
   const handleFinishShipment = async () => {
     if (!currentShipment) return;
     setLoading(true);
 
     try {
+      const token = await AsyncStorage.getItem('token');
       await axios.post(
-        'https://frex.onrender.com/driver/finish-shipment',
+        'https://frex.onrender.com/drivers/finish-shipment',
         { shipmentId: currentShipment.id },
         {
           headers: {
-            Authorization: `Bearer ${await AsyncStorage.getItem('token')}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
       Alert.alert('Sucesso', 'Frete finalizado com sucesso!');
       setCurrentShipment(null);
-      fetchDriverData();
+      await fetchDriverData();
     } catch (error) {
       console.error('Erro ao finalizar frete:', error.message);
       Alert.alert('Erro', 'Não foi possível finalizar o frete.');
@@ -121,18 +133,16 @@ export default function DriverDashboard({ navigation }) {
 
           <TouchableOpacity
             style={styles.notesButton}
-            onPress={() => navigation.navigate('NotasFiscais', { nfDetails: currentShipment.nfDetails })}
+            onPress={() => navigation.navigate('NotasFiscais')}
           >
             <View>
               <Text style={styles.notesText}>Notas Fiscais</Text>
               <Text style={styles.notesSubText}>
-              {currentShipment?.nfDetails?.filter(nf => nf.status === 'PENDENTE').length || 0} pendentes
+                {currentShipment?.nfDetails?.filter(nf => nf.status === 'PENDENTE').length || 0} pendentes
               </Text>
             </View>
             <MaterialIcons name="chevron-right" size={24} color="#9333EA" style={{ opacity: 0.6 }} />
           </TouchableOpacity>
-
-
 
           <TouchableOpacity
             style={styles.finishButton}
@@ -153,8 +163,7 @@ export default function DriverDashboard({ navigation }) {
   );
 }
 
-
-const styles = {
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FAF5FF',
@@ -254,4 +263,4 @@ const styles = {
     fontSize: 16,
     color: '#6B7280',
   },
-};
+});
