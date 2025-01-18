@@ -39,7 +39,7 @@ export const uploadToB2 = async (file) => {
       mime: file.mimetype,
     });
 
-    console.log('✅ Upload bem-sucedido:', response.data);
+    console.log('✅ Upload bem-sucedido', response.data);
 
     // Retorna URL pública
     return `https://f002.backblazeb2.com/file/${process.env.B2_BUCKET_NAME}/${response.data.fileName}`;
