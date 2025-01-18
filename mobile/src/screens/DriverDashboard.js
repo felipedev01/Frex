@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect,useState} from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, TouchableOpacity, Alert, Image, SafeAreaView } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,10 +10,11 @@ export default function DriverDashboard({ navigation }) {
   const [currentShipment, setCurrentShipment] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchDriverData();
-  }, []);
-
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchDriverData();
+    }, [])
+  );
   const fetchDriverData = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -124,7 +126,7 @@ export default function DriverDashboard({ navigation }) {
             <View>
               <Text style={styles.notesText}>Notas Fiscais</Text>
               <Text style={styles.notesSubText}>
-                {currentShipment.nfDetails ? currentShipment.nfDetails.length : 0}
+              {currentShipment?.nfDetails?.filter(nf => nf.status === 'PENDENTE').length || 0} pendentes
               </Text>
             </View>
             <MaterialIcons name="chevron-right" size={24} color="#9333EA" style={{ opacity: 0.6 }} />

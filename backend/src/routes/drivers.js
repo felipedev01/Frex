@@ -142,6 +142,22 @@ router.post(
       });
 
       console.log('✅ Nota Fiscal finalizada com sucesso!');
+
+      
+      // Verificar se todas as notas fiscais do frete estão com status "ENTREGUE"
+      const nfDetails = await prisma.nFDetail.findMany({
+        where: { shipmentId: nf.shipmentId },
+      });
+      const allDelivered = nfDetails.every((detail) => detail.status === 'ENTREGUE');
+      if (allDelivered) {
+        // Atualizar status do frete para "FINALIZADO"
+        await prisma.shipment.update({
+          where: { id: nf.shipmentId },
+          data: { status: 'FINALIZADO', finishedAt: new Date() },
+        });
+        console.log('✅ Frete finalizado com sucesso!');
+      }
+
       return res.status(200).json({ message: 'Nota Fiscal finalizada com sucesso!' });
     } catch (error) {
       console.error('❌ Erro ao finalizar NF:', error.message || error);

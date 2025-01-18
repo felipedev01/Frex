@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 export default function ComprovanteEntregaScreen({ route, navigation }) {
-  const { nfId } = route.params;
+  const { nfId,nfNumber } = route.params;
   const [photo, setPhoto] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -107,7 +107,7 @@ export default function ComprovanteEntregaScreen({ route, navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Comprovante de Entrega</Text>
-      <Text style={styles.subtitle}>NF-{nfId}</Text>
+      <Text style={styles.subtitle}>NF-{nfNumber}</Text>
 
       <View style={styles.instructionsContainer}>
         <Text style={styles.instructionsTitle}>Instruções para a foto:</Text>
