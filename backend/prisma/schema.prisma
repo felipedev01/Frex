@@ -13,6 +13,12 @@ enum ShipmentStatus {
   CONCLUIDO
 }
 
+enum NFStatus {
+  PENDENTE
+  ENTREGUE
+  DIVERGENTE
+}
+
 model Driver {
   id              Int        @id @default(autoincrement())
   name            String
@@ -28,8 +34,8 @@ model Shipment {
   name        String
   driverId    Int
   description String
-  origin      String   @default("Extrema-MG") // Adicionado: Local de origem do frete
-  destination String   // Adicionado: Local de destino do frete
+  origin      String   @default("Extrema-MG")
+  destination String
   status      String   @default("PENDENTE")
   createdAt   DateTime @default(now())
   finishedAt  DateTime?
@@ -38,14 +44,16 @@ model Shipment {
   nfDetails   NFDetail[]
 }
 
-
 model NFDetail {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   shipmentId  Int
   nfNumber    String
-  status      String   @default("PENDENTE")
+  status      NFStatus  @default(PENDENTE)
   proofImage  String?
-  createdAt   DateTime @default(now())
-
-  shipment    Shipment @relation(fields: [shipmentId], references: [id])
+  issueType   String?   // Tipo do problema reportado
+  issueDetails String?  // Detalhes do problema
+  createdAt   DateTime  @default(now())
+  completedAt DateTime? // Data em que foi entregue ou reportada
+  
+  shipment    Shipment  @relation(fields: [shipmentId], references: [id])
 }

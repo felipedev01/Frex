@@ -148,7 +148,7 @@ router.post(
       const nfDetails = await prisma.nFDetail.findMany({
         where: { shipmentId: nf.shipmentId },
       });
-      const allDelivered = nfDetails.every((detail) => detail.status === 'ENTREGUE');
+      const allDelivered = nfDetails.every((detail) => detail.status === 'ENTREGUE' || detail.status === 'DIVERGENTE');
       if (allDelivered) {
         // Atualizar status do frete para "FINALIZADO"
         await prisma.shipment.update({
@@ -166,6 +166,76 @@ router.post(
   }
 );
 
+// Rota para reportar problema em uma NF
+router.post(
+  '/report-nf-issue/:nfId',
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const { nfId } = req.params;
+      const { issueType, issueDetails } = req.body;
+
+      if (!issueType || !issueDetails) {
+        return res.status(400).json({ 
+          error: 'Tipo do problema e detalhes são obrigatórios' 
+        });
+      }
+
+      const nf = await prisma.nFDetail.findUnique({
+        where: { id: parseInt(nfId) },
+      });
+
+      if (!nf) {
+        return res.status(404).json({ error: 'Nota Fiscal não encontrada' });
+      }
+
+      if (nf.status !== 'PENDENTE') {
+        return res.status(400).json({ 
+          error: 'Esta nota fiscal já foi processada' 
+        });
+      }
+
+      // Atualiza a NF com o status DIVERGENTE e os detalhes do problema
+      await prisma.nFDetail.update({
+        where: { id: parseInt(nfId) },
+        data: { 
+          status: 'DIVERGENTE',
+          issueType,
+          issueDetails,
+          completedAt: new Date()
+        },
+      });
+
+      // Verifica se todas as NFs do frete foram processadas
+      const nfDetails = await prisma.nFDetail.findMany({
+        where: { shipmentId: nf.shipmentId },
+      });
+
+      const allProcessed = nfDetails.every(detail => 
+        detail.status === 'ENTREGUE' || detail.status === 'DIVERGENTE'
+      );
+
+      if (allProcessed) {
+        // Se todas foram processadas, finaliza o frete
+        await prisma.shipment.update({
+          where: { id: nf.shipmentId },
+          data: { 
+            status: 'FINALIZADO',
+            finishedAt: new Date()
+          },
+        });
+      }
+
+      return res.status(200).json({ 
+        message: 'Problema reportado com sucesso' 
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao reportar problema na NF:', error);
+      return res.status(500).json({ error: 'Erro no servidor' });
+    }
+  }
+);
 
 router.post('/test-upload', upload.single('proofImage'), (req, res) => {
   try {

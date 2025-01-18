@@ -8,19 +8,18 @@ import { AuthContext } from '../contexts/AuthContext';
 
 import LoginScreen from '../screens/LoginScreen';
 import DriverDashboard from '../screens/DriverDashboard';
-import NotaFiscaisScreen from '../screens/NotaFiscaisScreen'; // Importe o novo componente
+import NotaFiscaisScreen from '../screens/NotaFiscaisScreen';
 import ComprovanteEntregaScreen from '../screens/ComprovanteEntregaScreen';
+import ReportarProblemaScreen from '../screens/ReportarProblemaScreen'; // Nova importação
 
 const Stack = createStackNavigator();
 
 export default function AppRoutes() {
-  const { token, setToken } = useContext(AuthContext); // Adicione setToken para atualizar o token
+  const { token, setToken } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-
-   AsyncStorage.removeItem('token');
-    
+    AsyncStorage.removeItem('token');
     /* validateToken(); */
   }, []);
 
@@ -33,24 +32,21 @@ export default function AppRoutes() {
         throw new Error('Token não encontrado.');
       }
 
-      // Faz uma requisição ao backend para validar o token
       const response = await axios.get('https://frex.onrender.com/auth/validate-token', { 
-
         headers: {
           Authorization: `Bearer ${storedToken}`,
         },
       });
 
       if (response.data.valid) {
-        setToken(storedToken); // Atualiza o contexto com o token válido
-      
+        setToken(storedToken);
       } else {
         throw new Error('Token expirado ou inválido.');
       }
     } catch (error) {
       Alert.alert('Sessão expirada', 'Faça login novamente.');
-      await AsyncStorage.removeItem('token'); // Remove o token inválido do armazenamento
-      setToken(null); // Define o token no contexto como nulo
+      await AsyncStorage.removeItem('token');
+      setToken(null);
     } finally {
       setLoading(false);
     }
@@ -65,36 +61,46 @@ export default function AppRoutes() {
     );
   } */
 
-  
-    return (
-      <NavigationContainer>
-        <Stack.Navigator>
-          {!token ? (
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        {!token ? (
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{ headerShown: false }}
+          />
+        ) : (
+          <>
             <Stack.Screen
-              name="Login"
-              component={LoginScreen}
+              name="DriverDashboard"
+              component={DriverDashboard}
               options={{ headerShown: false }}
             />
-          ) : (
-            <>
-              <Stack.Screen
-                name="DriverDashboard"
-                component={DriverDashboard}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="NotasFiscais"
-                component={NotaFiscaisScreen}
-                options={{ title: 'Notas Fiscais', headerShown: true }}
-              />
-              <Stack.Screen
+            <Stack.Screen
+              name="NotasFiscais"
+              component={NotaFiscaisScreen}
+              options={{ 
+                headerShown: false // Mudado para false pois agora temos header próprio
+              }}
+            />
+            <Stack.Screen
               name="ComprovanteEntrega"
               component={ComprovanteEntregaScreen}
-              options={{ title: 'Comprovante de Entrega', headerShown: true }}
+              options={{ 
+                headerShown: false // Consistência com outras telas
+              }}
             />
-            </>
-          )}
-        </Stack.Navigator>
-      </NavigationContainer>
-    );
+            <Stack.Screen
+              name="ReportarProblema"
+              component={ReportarProblemaScreen}
+              options={{ 
+                headerShown: false // Header próprio na tela
+              }}
+            />
+          </>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
 }
