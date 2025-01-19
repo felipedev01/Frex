@@ -138,7 +138,7 @@ router.post(
 
       await prisma.nFDetail.update({
         where: { id: parseInt(nfId) },
-        data: { status: 'ENTREGUE', proofImage: proofImageUrl },
+        data: { status: 'ENTREGUE', proofImage: proofImageUrl, completedAt: new Date() },
       });
 
       console.log('✅ Nota Fiscal finalizada com sucesso!');
@@ -246,6 +246,26 @@ router.post('/test-upload', upload.single('proofImage'), (req, res) => {
     return res.status(200).json({ message: 'Upload bem-sucedido!', file: req.file });
   } catch (error) {
     console.error('Erro no teste de upload:', error.message || error);
+    return res.status(500).json({ error: 'Erro no servidor' });
+  }
+});
+
+// Adicionar ao router.js
+router.get('/invoice-history', async (req, res) => {
+  try {
+    const shipments = await prisma.shipment.findMany({
+      include: {
+        nfDetails: true,
+        driver: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return res.status(200).json(shipments);
+  } catch (error) {
+    console.error('Erro ao obter histórico:', error);
     return res.status(500).json({ error: 'Erro no servidor' });
   }
 });

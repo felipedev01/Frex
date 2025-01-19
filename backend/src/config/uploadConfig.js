@@ -42,7 +42,7 @@ export const uploadToB2 = async (file) => {
     console.log('✅ Upload bem-sucedido', response.data);
 
     // Retorna URL pública
-    return `https://f002.backblazeb2.com/file/${process.env.B2_BUCKET_NAME}/${response.data.fileName}`;
+    return `https://f005.backblazeb2.com/file/${process.env.B2_BUCKET_NAME}/${response.data.fileName}`;
   } catch (error) {
     console.error('❌ Erro ao fazer upload para Backblaze B2:', error.response?.data || error.message || error);
     throw new Error('Erro ao fazer upload para Backblaze B2');
