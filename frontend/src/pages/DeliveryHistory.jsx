@@ -21,7 +21,7 @@ const DeliveryHistory = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
 
-      const response = await fetch('http://localhost:3002/drivers/invoice-history', {
+      const response = await fetch('https://frex.onrender.com/drivers/invoice-history', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
