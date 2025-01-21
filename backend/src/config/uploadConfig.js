@@ -24,6 +24,9 @@ export const getDownloadUrl = async (fileName) => {
 
 export const uploadToB2 = async (file) => {
   try {
+    
+    await authorizeB2();
+
     const uploadUrlResponse = await b2.getUploadUrl({
       bucketId: process.env.B2_BUCKET_ID,
     });

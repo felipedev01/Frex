@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "FreX",
+    "name": "Frex",
     "slug": "frex",
     "icon": "./src/assets/icon.png",
     "version": "1.0.0",
@@ -8,11 +8,14 @@
     "splash": {
       "image": "./src/assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#9333EA"
     },
     "android": {
       "package": "com.felipecs88.frex",
-      "permissions": ["CAMERA"]
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "ios": {
       "bundleIdentifier": "com.felipecs88.frex",
@@ -23,6 +26,11 @@
     "plugins": [
       "expo-image-picker"
     ],
-    "newArchEnabled": true
+    "newArchEnabled": true,
+    "extra": {
+      "eas": {
+        "projectId": "5bafd9bb-5613-4303-af1f-a4bc31f9b4f4"
+      }
+    }
   }
 }
