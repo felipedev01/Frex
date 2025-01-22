@@ -1,5 +1,6 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
+import {checkAdminAuth} from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -61,7 +62,7 @@ router.get('/my-shipments', authenticateDriver, async (req, res) => {
   }
 }); */
 
-router.post('/', async (req, res) => {
+router.post('/', checkAdminAuth, async (req, res) => {
   try {
     const { name, driverId, description, origin, destination, nfNumbers } = req.body;
 

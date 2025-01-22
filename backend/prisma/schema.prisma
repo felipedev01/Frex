@@ -19,6 +19,21 @@ enum NFStatus {
   DIVERGENTE
 }
 
+model Admin {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model Viewer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
 model Driver {
   id              Int        @id @default(autoincrement())
   name            String

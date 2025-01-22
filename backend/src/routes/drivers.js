@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticateToken } from '../middlewares/authMiddleware.js';
+import { authenticateToken, checkWebAuth} from '../middlewares/authMiddleware.js';
 import { PrismaClient } from '@prisma/client';
 import { upload, uploadToB2 } from '../config/uploadConfig.js';
 
@@ -251,7 +251,7 @@ router.post('/test-upload', upload.single('proofImage'), (req, res) => {
 });
 
 // Adicionar ao router.js
-router.get('/invoice-history', async (req, res) => {
+router.get('/invoice-history',checkWebAuth, async (req, res) => {
   try {
     const shipments = await prisma.shipment.findMany({
       include: {
