@@ -131,7 +131,7 @@ const handleSubmit = async (e) => {
     if (error.response?.status === 401) {
       // Erro de autenticação - redireciona para login
       window.location.href = '/login';
-      setMessage({ type: 'error', text: 'Sessão expirada. Por favor, faça login novamente.' });
+      setMessage({ type: 'error', text: 'Sessão expirada. Por favor, refaça o login.' });
     } else if (error.response?.data?.error) {
       setMessage({ type: 'error', text: error.response.data.error });
     } else {
