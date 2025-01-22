@@ -59,8 +59,21 @@ export default function DriverDashboard({ navigation }) {
 
   const handleFinishShipment = async () => {
     if (!currentShipment) return;
+  
+    // Verifica se ainda existem notas pendentes
+    const pendingNotes = currentShipment.nfDetails.filter(nf => nf.status === 'PENDENTE').length;
+    
+    if (pendingNotes > 0) {
+      Alert.alert(
+        'Atenção',
+        'É preciso baixar todas as notas antes de finalizar o frete.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+  
+    // Resto do código original para finalizar o frete...
     setLoading(true);
-
     try {
       const token = await AsyncStorage.getItem('token');
       await axios.post(
@@ -82,7 +95,6 @@ export default function DriverDashboard({ navigation }) {
       setLoading(false);
     }
   };
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerContainer}>

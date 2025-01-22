@@ -94,41 +94,54 @@ const CadastroFrete = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+ // No handleSubmit
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const response = await axios.post('https://frex.onrender.com/shipments', {
+  try {
+    const token = localStorage.getItem('token'); // Pega o token do localStorage
+
+    const response = await axios.post('https://frex.onrender.com/shipments', 
+      {
         name: formData.name,
         destination: formData.destination,
         origin: 'Extrema - MG',
         nfNumbers: formData.nfList,
         driverId: formData.driverId,
         description: formData.description,
-      });
-
-      setMessage({ type: 'success', text: response.data.message });
-      setFormData({
-        name: '',
-        destination: '',
-        currentNF: '',
-        nfList: [],
-        driverId: '',
-        description: ''
-      });
-    } catch (error) {
-      if (error.response && error.response.data && error.response.data.error) {
-        // Exibe a mensagem de erro retornada pelo backend
-        setMessage({ type: 'error', text: error.response.data.error });
-      } else {
-        setMessage({ type: 'error', text: 'Erro ao cadastrar frete. Verifique os dados.' });
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}` // Inclui o token no header
+        }
       }
-      console.error('Erro:', error);
-    } finally {
-      setLoading(false);
+    );
+
+    setMessage({ type: 'success', text: response.data.message });
+    setFormData({
+      name: '',
+      destination: '',
+      currentNF: '',
+      nfList: [],
+      driverId: '',
+      description: ''
+    });
+  } catch (error) {
+    if (error.response?.status === 401) {
+      // Erro de autenticação - redireciona para login
+      window.location.href = '/login';
+      setMessage({ type: 'error', text: 'Sessão expirada. Por favor, faça login novamente.' });
+    } else if (error.response?.data?.error) {
+      setMessage({ type: 'error', text: error.response.data.error });
+    } else {
+      setMessage({ type: 'error', text: 'Erro ao cadastrar frete. Verifique os dados.' });
     }
-  };
+    console.error('Erro:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-purple-50 flex items-center justify-center p-4">

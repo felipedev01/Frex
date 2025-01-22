@@ -15,7 +15,7 @@ const LoginWeb = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3002/auth/auth/web-login', {
+      const response = await fetch('https://frex.onrender.com/auth/auth/web-login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
