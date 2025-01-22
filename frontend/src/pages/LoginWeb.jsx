@@ -32,7 +32,7 @@ const LoginWeb = () => {
       localStorage.setItem('userType', data.userType);
       
       // Redireciona baseado no tipo de usuário
-      window.location.href = data.userType === 'admin' ? '/dashboard' : '/historico';
+      window.location.href = data.userType === 'admin' ? '/' : '/historico';
     } catch (error) {
       setError('Usuário ou senha incorretos');
     } finally {
