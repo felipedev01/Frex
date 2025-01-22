@@ -22,19 +22,36 @@ const ProtectedRoute = ({ children, allowedTypes }) => {
 };
 
 function App() {
+  // Verificar autenticação
+  const isAuthenticated = Boolean(localStorage.getItem('token'));
+  const userType = localStorage.getItem('userType');
+
   return (
     <Router>
       <Routes>
-        {/* Rota pública */}
-        <Route path="/login" element={<LoginWeb />} />
+        {/* Rota pública - Login */}
+        <Route 
+          path="/login" 
+          element={
+            isAuthenticated ? (
+              <Navigate to={userType === 'admin' ? '/' : '/historico'} replace />
+            ) : (
+              <LoginWeb />
+            )
+          } 
+        />
 
-        {/* Rota protegida - apenas admin */}
+        {/* Rota inicial - redireciona baseado na autenticação */}
         <Route 
           path="/" 
           element={
-            <ProtectedRoute allowedTypes={['admin']}>
-              <CadastroFrete />
-            </ProtectedRoute>
+            !isAuthenticated ? (
+              <Navigate to="/login" replace />
+            ) : (
+              <ProtectedRoute allowedTypes={['admin']}>
+                <CadastroFrete />
+              </ProtectedRoute>
+            )
           } 
         />
 
@@ -54,9 +71,9 @@ function App() {
           element={
             <Navigate 
               to={
-                !localStorage.getItem('token')
+                !isAuthenticated
                   ? '/login'
-                  : localStorage.getItem('userType') === 'admin'
+                  : userType === 'admin'
                     ? '/'
                     : '/historico'
               } 
