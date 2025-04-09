@@ -20,7 +20,5 @@ app.use('/shipments', shipmentsRouter );
 
 app.use('/auth', authRouter);
 
-// Iniciar servidor
-app.listen(3002, '0.0.0.0', () => {
-  console.log('Servidor rodando na porta 3002 atualizado!');
-});
+// Exportar app para ser usado no server.js
+export default app;
