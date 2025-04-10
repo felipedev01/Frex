@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 import { X } from 'lucide-react';
 import AsyncSelect from 'react-select/async';
-import logoFrex from '../assets/logo_frex.svg';
+import logoFrex from '../assets/logo_frex.svg'
 import axios from 'axios';
 
 // Componente de Alerta
