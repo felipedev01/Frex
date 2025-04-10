@@ -3,7 +3,9 @@ import {
   validateToken, 
   registerDriver, 
   loginDriver, 
-  createUser, 
+  registerTransportCompany,
+  loginTransportCompany,
+  createViewer, 
   webLogin 
 } from '../controllers/authController.js';
 
@@ -13,13 +15,19 @@ const router = express.Router();
 router.get('/validate-token', validateToken);
 
 // Cadastro de Motorista
-router.post('/register', registerDriver);
+router.post('/driver/register', registerDriver);
 
 // Login de Motorista
-router.post('/login', loginDriver);
+router.post('/driver/login', loginDriver);
 
-// Criação de usuários administrativos
-router.post('/users', createUser);
+// Cadastro de Transportadora
+router.post('/transport-company/register', registerTransportCompany);
+
+// Login de Transportadora
+router.post('/transport-company/login', loginTransportCompany);
+
+// Criação de usuários viewer
+router.post('/viewer/create', createViewer);
 
 // Login para interface web
 router.post('/auth/web-login', webLogin);

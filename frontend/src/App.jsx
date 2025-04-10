@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import CadastroFrete from './pages/CadastroFrete';
 import DeliveryHistory from './pages/DeliveryHistory';
 import LoginWeb from './pages/LoginWeb';
+import RegisterTransportCompany from './pages/RegisterTransportCompany';
+import TransportadoraDashboard from './pages/TransportadoraDashboard';
 import './App.css';
 
 // Componente para rotas protegidas
@@ -15,7 +17,7 @@ const ProtectedRoute = ({ children, allowedTypes }) => {
   }
 
   if (!allowedTypes.includes(userType)) {
-    return <Navigate to="/historico" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return children;
@@ -34,11 +36,27 @@ function App() {
           path="/login" 
           element={
             isAuthenticated ? (
-              <Navigate to={userType === 'admin' ? '/admin' : '/historico'} replace />
+              userType === 'transportCompany' ? (
+                <Navigate to="/transportadora" replace />
+              ) : (
+                <Navigate to={userType === 'admin' ? '/admin' : '/historico'} replace />
+              )
             ) : (
               <LoginWeb />
             )
           } 
+        />
+
+        {/* Rota pública - Cadastro de Transportadora */}
+        <Route
+          path="/cadastro-transportadora"
+          element={
+            isAuthenticated ? (
+              <Navigate to={userType === 'transportCompany' ? '/transportadora' : '/admin'} replace />
+            ) : (
+              <RegisterTransportCompany />
+            )
+          }
         />
 
         {/* Rota inicial - redireciona para login */}
@@ -57,11 +75,21 @@ function App() {
           } 
         />
 
+        {/* Rota protegida - transportadora */}
+        <Route 
+          path="/transportadora"
+          element={
+            <ProtectedRoute allowedTypes={['transportCompany']}>
+              <TransportadoraDashboard />
+            </ProtectedRoute>
+          } 
+        />
+
         {/* Rota protegida - admin e viewer */}
         <Route 
           path="/historico" 
           element={
-            <ProtectedRoute allowedTypes={['admin', 'viewer']}>
+            <ProtectedRoute allowedTypes={['admin', 'viewer', 'transportCompany']}>
               <DeliveryHistory />
             </ProtectedRoute>
           } 

@@ -18,7 +18,25 @@ export const registerDriver = async (req, res) => {
   if (result.success) {
     return res.status(201).json({ message: 'Motorista cadastrado com sucesso!' });
   } else {
-    return res.status(400).json({ error: 'Erro ao cadastrar motorista' });
+    return res.status(400).json({ error: result.error });
+  }
+};
+
+export const registerTransportCompany = async (req, res) => {
+  const result = await authService.createTransportCompany(req.body);
+  
+  if (result.success) {
+    return res.status(201).json({ 
+      message: 'Transportadora cadastrada com sucesso!',
+      company: {
+        id: result.company.id,
+        name: result.company.name,
+        email: result.company.email,
+        cnpj: result.company.cnpj
+      }
+    });
+  } else {
+    return res.status(400).json({ error: result.error });
   }
 };
 
@@ -38,7 +56,24 @@ export const loginDriver = async (req, res) => {
   }
 };
 
-export const createUser = async (req, res) => {
+export const loginTransportCompany = async (req, res) => {
+  const { email, password } = req.body;
+  
+  const result = await authService.authenticateTransportCompany(email, password);
+  
+  if (result.success) {
+    return res.status(200).json({
+      message: 'Login bem-sucedido!',
+      token: result.token,
+      userType: result.userType,
+      user: result.user
+    });
+  } else {
+    return res.status(result.error === 'Erro no servidor' ? 500 : 401).json({ error: result.error });
+  }
+};
+
+export const createViewer = async (req, res) => {
   const result = await authService.createWebUser(req.body);
   
   if (result.success) {

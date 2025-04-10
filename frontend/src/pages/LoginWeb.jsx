@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import logoFrex from '../assets/logo_frex.svg';
+import apiService from '../services/api';
 
 const LoginWeb = () => {
   const [username, setUsername] = useState('');
@@ -15,24 +17,20 @@ const LoginWeb = () => {
     setError('');
 
     try {
-      const response = await fetch('https://frex.onrender.com/auth/auth/web-login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: username, password }) // Mantém email no body para compatibilidade com backend
-      });
-
-      if (!response.ok) {
-        throw new Error('Credenciais inválidas');
-      }
-
-      const data = await response.json();
+      const data = await apiService.login(username, password);
+      
       localStorage.setItem('token', data.token);
       localStorage.setItem('userType', data.userType);
+      localStorage.setItem('userName', data.name);
       
       // Redireciona baseado no tipo de usuário
-      window.location.href = data.userType === 'admin' ? '/' : '/historico';
+      if (data.userType === 'transportCompany') {
+        window.location.href = '/transportadora';
+      } else if (data.userType === 'admin') {
+        window.location.href = '/admin';
+      } else {
+        window.location.href = '/historico';
+      }
     } catch (error) {
       setError('Usuário ou senha incorretos');
     } finally {
@@ -79,7 +77,7 @@ const LoginWeb = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full px-3 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Digite seu usuário"
+                  placeholder="Digite seu email"
                   required
                 />
               </div>
@@ -117,6 +115,15 @@ const LoginWeb = () => {
                 </span>
               ) : 'Entrar'}
             </button>
+            
+            <div className="text-center mt-4">
+              <p className="text-sm text-gray-600">
+                É uma transportadora e não tem conta?{' '}
+                <Link to="/cadastro-transportadora" className="text-purple-600 hover:text-purple-800 font-medium">
+                  Cadastre-se agora
+                </Link>
+              </p>
+            </div>
           </form>
         </CardContent>
       </Card>

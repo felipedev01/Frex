@@ -18,17 +18,31 @@ export const verifyToken = (token) => {
 
 // Registra um novo motorista
 export const createDriver = async (driverData) => {
-  const { name, email, password, transportCompany, licensePlate } = driverData;
+  const { name, email, password, transportCompanyId, licensePlate, phone, documentId } = driverData;
   
   try {
+    // Verifica se já existe um motorista com o mesmo e-mail
+    const existingDriver = await authRepository.findDriverByEmail(email);
+    if (existingDriver.success && existingDriver.data) {
+      return { success: false, error: 'E-mail já cadastrado' };
+    }
+    
+    // Verifica se já existe um motorista com a mesma placa
+    const existingLicensePlate = await authRepository.findDriverByLicensePlate(licensePlate);
+    if (existingLicensePlate.success && existingLicensePlate.data) {
+      return { success: false, error: 'Placa já cadastrada' };
+    }
+    
     const hashedPassword = await bcrypt.hash(password, 10);
     
     const result = await authRepository.createDriver({
       name,
       email,
       password: hashedPassword,
-      transportCompany,
+      transportCompanyId,
       licensePlate,
+      phone,
+      documentId
     });
 
     if (!result.success) {
@@ -40,6 +54,47 @@ export const createDriver = async (driverData) => {
   } catch (error) {
     console.error('Erro ao cadastrar motorista:', error);
     return { success: false, error };
+  }
+};
+
+// Registra uma nova transportadora
+export const createTransportCompany = async (companyData) => {
+  const { name, cnpj, email, password, address, phone, contactPerson } = companyData;
+  
+  try {
+    // Verifica se já existe uma transportadora com o mesmo e-mail
+    const existingCompanyEmail = await authRepository.findTransportCompanyByEmail(email);
+    if (existingCompanyEmail.success && existingCompanyEmail.data) {
+      return { success: false, error: 'E-mail já cadastrado' };
+    }
+    
+    // Verifica se já existe uma transportadora com o mesmo CNPJ
+    const existingCompanyCNPJ = await authRepository.findTransportCompanyByCNPJ(cnpj);
+    if (existingCompanyCNPJ.success && existingCompanyCNPJ.data) {
+      return { success: false, error: 'CNPJ já cadastrado' };
+    }
+    
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    const result = await authRepository.createTransportCompany({
+      name,
+      cnpj,
+      email,
+      password: hashedPassword,
+      address,
+      phone,
+      contactPerson
+    });
+
+    if (!result.success) {
+      console.error('Erro ao cadastrar transportadora:', result.error);
+      return { success: false, error: 'Erro ao cadastrar transportadora' };
+    }
+
+    return { success: true, company: result.data };
+  } catch (error) {
+    console.error('Erro ao cadastrar transportadora:', error);
+    return { success: false, error: error.message };
   }
 };
 
@@ -59,7 +114,7 @@ export const authenticateDriver = async (email, password) => {
       return { success: false, error: 'Senha incorreta' };
     }
 
-    const token = jwt.sign({ id: driver.id }, process.env.SECRET_KEY, {
+    const token = jwt.sign({ id: driver.id, type: 'driver' }, process.env.SECRET_KEY, {
       expiresIn: '1h',
     });
 
@@ -70,6 +125,7 @@ export const authenticateDriver = async (email, password) => {
         id: driver.id,
         name: driver.name,
         email: driver.email,
+        transportCompanyId: driver.transportCompanyId,
       },
     };
   } catch (error) {
@@ -78,44 +134,65 @@ export const authenticateDriver = async (email, password) => {
   }
 };
 
-// Cria um novo usuário admin ou viewer
+// Autentica uma transportadora e gera token JWT
+export const authenticateTransportCompany = async (email, password) => {
+  try {
+    const companyResult = await authRepository.findTransportCompanyByEmail(email);
+    
+    if (!companyResult.success || !companyResult.data) {
+      return { success: false, error: 'Transportadora não encontrada' };
+    }
+    
+    const company = companyResult.data;
+    const isPasswordValid = await bcrypt.compare(password, company.password);
+    
+    if (!isPasswordValid) {
+      return { success: false, error: 'Senha incorreta' };
+    }
+
+    const token = jwt.sign({ id: company.id, type: 'transportCompany' }, process.env.SECRET_KEY, {
+      expiresIn: '24h',
+    });
+
+    return {
+      success: true,
+      token,
+      userType: 'transportCompany',
+      user: {
+        id: company.id,
+        name: company.name,
+        email: company.email,
+      },
+    };
+  } catch (error) {
+    console.error('Erro na autenticação da transportadora:', error);
+    return { success: false, error: 'Erro no servidor' };
+  }
+};
+
+// Cria um novo usuário viewer
 export const createWebUser = async (userData) => {
   try {
-    const { name, email, password, userType } = userData;
+    const { name, email, password } = userData;
 
-    if (!name || !email || !password || !userType) {
+    if (!name || !email || !password) {
       return { success: false, error: 'Todos os campos são obrigatórios' };
     }
 
-    if (!['admin', 'viewer'].includes(userType)) {
-      return { success: false, error: 'Tipo de usuário inválido' };
-    }
-
     // Verificar se o email já está em uso
-    const adminResult = await authRepository.findAdminByEmail(email);
     const viewerResult = await authRepository.findViewerByEmail(email);
     
-    if ((adminResult.success && adminResult.data) || 
-        (viewerResult.success && viewerResult.data)) {
+    if (viewerResult.success && viewerResult.data) {
       return { success: false, error: 'Email já está em uso' };
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    let userResult;
-    if (userType === 'admin') {
-      userResult = await authRepository.createAdmin({
-        name,
-        email,
-        password: hashedPassword
-      });
-    } else {
-      userResult = await authRepository.createViewer({
-        name,
-        email,
-        password: hashedPassword
-      });
-    }
+    const userResult = await authRepository.createViewer({
+      name,
+      email,
+      password: hashedPassword
+    });
 
     if (!userResult.success) {
       return { success: false, error: 'Erro ao criar usuário' };
@@ -126,7 +203,7 @@ export const createWebUser = async (userData) => {
     
     return {
       success: true,
-      message: `Usuário ${userType} criado com sucesso`,
+      message: 'Usuário viewer criado com sucesso',
       data: userWithoutPassword
     };
   } catch (error) {
@@ -135,23 +212,23 @@ export const createWebUser = async (userData) => {
   }
 };
 
-// Autentica um usuário web (admin ou viewer)
+// Autentica um usuário web (transportadora ou viewer)
 export const authenticateWebUser = async (email, password) => {
   try {
     if (!email || !password) {
       return { success: false, error: 'Email e senha são obrigatórios' };
     }
 
-    // Verificar se é um admin
-    const adminResult = await authRepository.findAdminByEmail(email);
+    // Verificar se é uma transportadora
+    const companyResult = await authRepository.findTransportCompanyByEmail(email);
     
-    if (adminResult.success && adminResult.data) {
-      const admin = adminResult.data;
-      const validPassword = await bcrypt.compare(password, admin.password);
+    if (companyResult.success && companyResult.data) {
+      const company = companyResult.data;
+      const validPassword = await bcrypt.compare(password, company.password);
       
       if (validPassword) {
         const token = jwt.sign(
-          { id: admin.id, type: 'admin' },
+          { id: company.id, type: 'transportCompany' },
           process.env.SECRET_KEY,
           { expiresIn: '24h' }
         );
@@ -159,8 +236,8 @@ export const authenticateWebUser = async (email, password) => {
         return {
           success: true,
           token,
-          userType: 'admin',
-          name: admin.name
+          userType: 'transportCompany',
+          name: company.name
         };
       }
     }

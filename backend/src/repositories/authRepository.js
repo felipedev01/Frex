@@ -15,6 +15,19 @@ export const findDriverByEmail = async (email) => {
   }
 };
 
+// Buscar motorista por placa
+export const findDriverByLicensePlate = async (licensePlate) => {
+  try {
+    const driver = await prisma.driver.findUnique({
+      where: { licensePlate }
+    });
+    return { success: true, data: driver };
+  } catch (error) {
+    console.error('Erro ao buscar motorista por placa:', error);
+    return { success: false, error };
+  }
+};
+
 // Criar motorista
 export const createDriver = async (driverData) => {
   try {
@@ -28,15 +41,41 @@ export const createDriver = async (driverData) => {
   }
 };
 
-// Buscar admin por email
-export const findAdminByEmail = async (email) => {
+// Buscar transportadora por email
+export const findTransportCompanyByEmail = async (email) => {
   try {
-    const admin = await prisma.admin.findUnique({
+    const company = await prisma.transportCompany.findUnique({
       where: { email }
     });
-    return { success: true, data: admin };
+    return { success: true, data: company };
   } catch (error) {
-    console.error('Erro ao buscar admin por email:', error);
+    console.error('Erro ao buscar transportadora por email:', error);
+    return { success: false, error };
+  }
+};
+
+// Buscar transportadora por CNPJ
+export const findTransportCompanyByCNPJ = async (cnpj) => {
+  try {
+    const company = await prisma.transportCompany.findUnique({
+      where: { cnpj }
+    });
+    return { success: true, data: company };
+  } catch (error) {
+    console.error('Erro ao buscar transportadora por CNPJ:', error);
+    return { success: false, error };
+  }
+};
+
+// Criar transportadora
+export const createTransportCompany = async (companyData) => {
+  try {
+    const company = await prisma.transportCompany.create({
+      data: companyData
+    });
+    return { success: true, data: company };
+  } catch (error) {
+    console.error('Erro ao criar transportadora:', error);
     return { success: false, error };
   }
 };
@@ -50,19 +89,6 @@ export const findViewerByEmail = async (email) => {
     return { success: true, data: viewer };
   } catch (error) {
     console.error('Erro ao buscar viewer por email:', error);
-    return { success: false, error };
-  }
-};
-
-// Criar admin
-export const createAdmin = async (adminData) => {
-  try {
-    const admin = await prisma.admin.create({
-      data: adminData
-    });
-    return { success: true, data: admin };
-  } catch (error) {
-    console.error('Erro ao criar admin:', error);
     return { success: false, error };
   }
 };
