@@ -34,24 +34,26 @@ function App() {
           path="/login" 
           element={
             isAuthenticated ? (
-              <Navigate to={userType === 'admin' ? '/' : '/historico'} replace />
+              <Navigate to={userType === 'admin' ? '/admin' : '/historico'} replace />
             ) : (
               <LoginWeb />
             )
           } 
         />
 
-        {/* Rota inicial - redireciona baseado na autenticação */}
+        {/* Rota inicial - redireciona para login */}
         <Route 
           path="/" 
+          element={<Navigate to="/login" replace />} 
+        />
+
+        {/* Rota protegida - admin */}
+        <Route 
+          path="/admin" 
           element={
-            !isAuthenticated ? (
-              <Navigate to="/login" replace />
-            ) : (
-              <ProtectedRoute allowedTypes={['admin']}>
-                <CadastroFrete />
-              </ProtectedRoute>
-            )
+            <ProtectedRoute allowedTypes={['admin']}>
+              <CadastroFrete />
+            </ProtectedRoute>
           } 
         />
 
@@ -68,18 +70,7 @@ function App() {
         {/* Redireciona rotas não encontradas */}
         <Route 
           path="*" 
-          element={
-            <Navigate 
-              to={
-                !isAuthenticated
-                  ? '/login'
-                  : userType === 'admin'
-                    ? '/'
-                    : '/historico'
-              } 
-              replace 
-            />
-          }
+          element={<Navigate to="/login" replace />}
         />
       </Routes>
     </Router>
